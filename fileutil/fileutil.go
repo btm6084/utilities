@@ -39,6 +39,19 @@ func IsBinaryFile(fileName string) bool {
 	return false
 }
 
+// IsBinaryData attemtpts to determine whether a given byte slice contains binary data.
+func IsBinaryData(b []byte) bool {
+	if len(b) < 1 {
+		return false
+	}
+
+	if !utf8.Valid(b) {
+		return true
+	}
+
+	return false
+}
+
 // IsDir will return true only if the given path exists and is a directory.
 func IsDir(fileName string) bool {
 	f, err := os.Stat(fileName)
@@ -48,6 +61,21 @@ func IsDir(fileName string) bool {
 	}
 
 	if !f.Mode().IsDir() {
+		return false
+	}
+
+	return true
+}
+
+// IsFile will return true only if the given path exists and is a regular file.
+func IsFile(fileName string) bool {
+	f, err := os.Stat(fileName)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+
+	if !f.Mode().IsRegular() {
 		return false
 	}
 
