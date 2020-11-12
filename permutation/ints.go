@@ -1,9 +1,9 @@
 package permutation
 
-// Strings returns a set of all the permutations of the input slice.
-func Strings(in []string) [][]string {
+// Ints returns a set of all the permutations of the input slice.
+func Ints(in []int) [][]int {
 	if len(in) < 2 {
-		return [][]string{in}
+		return [][]int{in}
 	}
 
 	n := len(in)
@@ -12,9 +12,9 @@ func Strings(in []string) [][]string {
 		p *= i
 	}
 
-	output := make([][]string, p)
+	output := make([][]int, p)
 	for i := 0; i < p; i++ {
-		output[i] = make([]string, n)
+		output[i] = make([]int, n)
 	}
 
 	// The smallest base permutation is 2x2
@@ -45,27 +45,27 @@ func Strings(in []string) [][]string {
 	return output
 }
 
-// StringsRecursive builds the permutation list recursively
-func StringsRecursive(in []string) [][]string {
-	return perm(in, []string{}, [][]string{})
+// IntsRecursive builds the permutation list recursively
+func IntsRecursive(in []int) [][]int {
+	return permInt(in, []int{}, [][]int{})
 }
 
-func perm(in []string, path []string, acc [][]string) [][]string {
+func permInt(in []int, path []int, acc [][]int) [][]int {
 	if len(in) == 0 {
 		acc = append(acc, path)
 		return acc
 	}
 
 	for i := 0; i < len(in); i++ {
-		acc = perm(delete(in, i), append(path, in[i]), acc)
+		acc = permInt(deleteInt(in, i), append(path, in[i]), acc)
 	}
 
 	return acc
 }
 
 // delete makes a copy of the incoming slice that excludes the given index.
-func delete(in []string, idx int) []string {
-	var out = make([]string, len(in)-1)
+func deleteInt(in []int, idx int) []int {
+	var out = make([]int, len(in)-1)
 
 	b := 0
 	for i := 0; i < len(in); i++ {
@@ -78,22 +78,4 @@ func delete(in []string, idx int) []string {
 	}
 
 	return out
-}
-
-// StringsRecursiveAppend builds the permutation list recursively, but with append instead of delete function
-func StringsRecursiveAppend(in []string) [][]string {
-	return perma(in, []string{}, [][]string{})
-}
-
-func perma(in []string, path []string, acc [][]string) [][]string {
-	if len(in) == 0 {
-		acc = append(acc, path)
-		return acc
-	}
-
-	for i := 0; i < len(in); i++ {
-		acc = perm(append(in[:i], in[i+1:]...), append(path, in[i]), acc)
-	}
-
-	return acc
 }

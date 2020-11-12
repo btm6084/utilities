@@ -3,39 +3,47 @@ package permutation
 import "testing"
 
 var (
-	input = []string{"a", "b", "c", "d", "e"}
+	inputStrings = []string{"a", "b", "c", "d", "e"}
+	inputInts    = []int{1, 2, 3, 4, 5}
 )
 
 /*
 
 Thu 12 Nov 2020 12:53:36 PM CST
 
-go test -bench=. -benchmem -benchtime=10s
+go test -bench=. -benchmem
 goos: linux
 goarch: amd64
 pkg: github.com/btm6084/utilities/permutation
-BenchmarkPermuteLoop-4              	  660688	     30304 ns/op	   12672 B/op	     121 allocs/op
-BenchmarkPermuteRecursive-4         	  240336	     54207 ns/op	   31168 B/op	     418 allocs/op
-BenchmarkPermuteRecursiveAppend-4   	  265472	     46140 ns/op	   30848 B/op	     413 allocs/op
+BenchmarkPermuteLoopStrings-4        	   63946	     17348 ns/op	   12672 B/op	     121 allocs/op
+BenchmarkPermuteRecursiveStrings-4   	   27374	     41694 ns/op	   31168 B/op	     418 allocs/op
+BenchmarkPermuteLoopInts-4           	   97945	     10705 ns/op	    8832 B/op	     121 allocs/op
+BenchmarkPermuteRecursiveInts-4      	   50305	     24007 ns/op	   18808 B/op	     418 allocs/op
 PASS
-ok  	github.com/btm6084/utilities/permutation	46.458s
+ok  	github.com/btm6084/utilities/permutation	5.523s
 
 */
 
-func BenchmarkPermuteLoop(b *testing.B) {
+func BenchmarkPermuteLoopStrings(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Strings(input)
+		Strings(inputStrings)
 	}
 }
 
-func BenchmarkPermuteRecursive(b *testing.B) {
+func BenchmarkPermuteRecursiveStrings(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		StringsRecursive(input)
+		StringsRecursive(inputStrings)
 	}
 }
 
-func BenchmarkPermuteRecursiveAppend(b *testing.B) {
+func BenchmarkPermuteLoopInts(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		StringsRecursiveAppend(input)
+		Ints(inputInts)
+	}
+}
+
+func BenchmarkPermuteRecursiveInts(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		IntsRecursive(inputInts)
 	}
 }
