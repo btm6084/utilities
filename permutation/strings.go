@@ -1,5 +1,9 @@
 package permutation
 
+var (
+	overflow = 10
+)
+
 // Strings returns a set of all the permutations of the input slice.
 func Strings(in []string) [][]string {
 	if len(in) < 2 {
@@ -7,7 +11,7 @@ func Strings(in []string) [][]string {
 	}
 
 	// Overflow
-	if len(in) > 8 {
+	if len(in) > overflow {
 		return nil
 	}
 
@@ -53,7 +57,7 @@ func Strings(in []string) [][]string {
 // StringsRecursive builds the permutation list recursively
 func StringsRecursive(in []string) [][]string {
 	// Overflow
-	if len(in) > 8 {
+	if len(in) > overflow {
 		return nil
 	}
 

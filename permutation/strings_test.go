@@ -1,12 +1,68 @@
 package permutation
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
+	"github.com/spf13/cast"
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	stringsInput = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"}
+)
+
+func factorial(n int) int {
+	acc := 1
+	for i := 0; i < n; i++ {
+		acc *= i + 1
+	}
+
+	return acc
+}
+
 func TestStrings(t *testing.T) {
+
+	t.Run("Large Input", func(t *testing.T) {
+		actual := Strings(stringsInput[:8])
+		assert.Equal(t, factorial(8), len(actual))
+
+		s := make([]string, len(actual))
+		for i, v := range actual {
+			s[i] = strings.Join(v, " ")
+		}
+
+		assert.Equal(t, len(actual), len(UniqueString(s, false)))
+
+		seen := make(map[string]int)
+		for i := 0; i < len(actual); i++ {
+			seen[strings.Join(actual[i], ",")]++
+		}
+
+		for i := 0; i < len(largeInput); i++ {
+			if _, ok := seen[strings.Join(largeInput[i], ",")]; !ok {
+				fmt.Println("Missing!", strings.Join(largeInput[i], ","))
+				t.FailNow()
+			}
+		}
+	})
+
+	for i := 1; i <= 10; i++ {
+		t.Run(cast.ToString(i)+"s", func(t *testing.T) {
+
+			actual := Strings(stringsInput[:i])
+			assert.Equal(t, factorial(i), len(actual))
+
+			s := make([]string, len(actual))
+			for i, v := range actual {
+				s[i] = strings.Join(v, " ")
+			}
+
+			assert.Equal(t, len(actual), len(UniqueString(s, false)))
+		})
+	}
+
 	t.Run("2s", func(t *testing.T) {
 		input := []string{"a", "b"}
 		expected := [][]string{
@@ -945,6 +1001,45 @@ func TestStrings(t *testing.T) {
 }
 
 func TestStringsRecursive(t *testing.T) {
+	t.Run("Large Input", func(t *testing.T) {
+		actual := StringsRecursive(stringsInput[:8])
+		assert.Equal(t, factorial(8), len(actual))
+
+		s := make([]string, len(actual))
+		for i, v := range actual {
+			s[i] = strings.Join(v, " ")
+		}
+
+		assert.Equal(t, len(actual), len(UniqueString(s, false)))
+
+		seen := make(map[string]int)
+		for i := 0; i < len(actual); i++ {
+			seen[strings.Join(actual[i], ",")]++
+		}
+
+		for i := 0; i < len(largeInput); i++ {
+			if _, ok := seen[strings.Join(largeInput[i], ",")]; !ok {
+				fmt.Println("Missing!", strings.Join(largeInput[i], ","))
+				t.FailNow()
+			}
+		}
+	})
+
+	for i := 1; i <= 10; i++ {
+		t.Run(cast.ToString(i)+"s", func(t *testing.T) {
+
+			actual := StringsRecursive(stringsInput[:i])
+			assert.Equal(t, factorial(i), len(actual))
+
+			s := make([]string, len(actual))
+			for i, v := range actual {
+				s[i] = strings.Join(v, " ")
+			}
+
+			assert.Equal(t, len(actual), len(UniqueString(s, false)))
+		})
+	}
+
 	t.Run("2s", func(t *testing.T) {
 		input := []string{"a", "b"}
 		expected := [][]string{
@@ -1879,5 +1974,32 @@ func TestStringsRecursive(t *testing.T) {
 		actual := StringsRecursive(input)
 		assert.ElementsMatch(t, expected, actual)
 		assert.Equal(t, 6*5*4*3*2*1, len(actual))
+
+		s := make([]string, len(actual))
+		for i, v := range actual {
+			s[i] = strings.Join(v, " ")
+		}
+
+		assert.Equal(t, len(actual), len(UniqueString(s, false)))
 	})
+}
+
+// UniqueString takes a slice of string and returns a slice with only unique elements.
+func UniqueString(in []string, allowEmpty bool) []string {
+	seen := make(map[string]bool)
+	var out []string
+	for _, v := range in {
+		if _, isset := seen[v]; isset {
+			continue
+		}
+
+		if !allowEmpty && v == "" {
+			continue
+		}
+
+		seen[v] = true
+		out = append(out, v)
+	}
+
+	return out
 }

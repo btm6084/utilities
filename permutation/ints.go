@@ -7,7 +7,7 @@ func Ints(in []int) [][]int {
 	}
 
 	// Overflow
-	if len(in) > 8 {
+	if len(in) > overflow {
 		return nil
 	}
 
@@ -53,7 +53,7 @@ func Ints(in []int) [][]int {
 // IntsRecursive builds the permutation list recursively
 func IntsRecursive(in []int) [][]int {
 	// Overflow
-	if len(in) > 8 {
+	if len(in) > overflow {
 		return nil
 	}
 
