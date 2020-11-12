@@ -21,6 +21,7 @@ func Strings(in []string) [][]string {
 	output[0][0], output[0][1] = in[0], in[1]
 	output[1][0], output[1][1] = in[1], in[0]
 
+	// acc is an accumulator, which aggregates the current set length.
 	acc := 2
 	for i := 2; i < n; i++ {
 		// For each N, copy the last set to the new home
@@ -44,49 +45,37 @@ func Strings(in []string) [][]string {
 	return output
 }
 
-// // Strings returns a set of all the permutations of the input slice.
-// func Strings(in []string) [][]string {
-// 	if len(in) < 2 {
-// 		return [][]string{in}
-// 	}
+// StringsRecursive builds the permutation list recursively
+func StringsRecursive(in []string) [][]string {
+	return perm(in, []string{}, [][]string{})
+}
 
-// 	n := len(in)
-// 	p := n
-// 	for i := n - 1; i > 0; i-- {
-// 		p *= i
-// 	}
+func perm(in []string, path []string, acc [][]string) [][]string {
+	if len(in) == 0 {
+		acc = append(acc, path)
+		return acc
+	}
 
-// 	output := make([][]string, p)
-// 	for i := 0; i < p; i++ {
-// 		output[i] = make([]string, n)
-// 	}
+	for i := 0; i < len(in); i++ {
+		acc = perm(delete(in, i), append(path, in[i]), acc)
+	}
 
-// 	// The smallest base permutation is 2x2
-// 	output[0] = []string{in[0], in[1]}
-// 	output[1] = []string{in[1], in[0]}
+	return acc
+}
 
-// 	// // Fill all slots with repeating pattern. This creates matching pairs, half the solution set.
-// 	// for j := 0; j < n; j++ {
-// 	// 	slots := int(p / n)
+// delete makes a copy of the incoming slice that excludes the given index.
+func delete(in []string, idx int) []string {
+	var out = make([]string, len(in)-1)
 
-// 	// 	for i := 0; i < p; i++ {
-// 	// 		k := (i/slots + j) % n
-// 	// 		output[i][k] = in[j]
-// 	// 	}
-// 	// }
+	b := 0
+	for i := 0; i < len(in); i++ {
+		if i == idx {
+			continue
+		}
 
-// 	// // Mirror one of every matching pair. This is the second half of the solution set.
-// 	// for i := 1; i < p; i += 2 {
-// 	// 	for k := 0; k < n; k++ {
-// 	// 		output[i-1][k] = output[i][n-k-1]
-// 	// 	}
-// 	// }
+		out[b] = in[i]
+		b++
+	}
 
-// 	// for i := 0; i < len(output); i++ {
-// 	// 	fmt.Println(output[i])
-// 	// }
-
-// 	// os.Exit(1)
-
-// 	return output
-// }
+	return out
+}
