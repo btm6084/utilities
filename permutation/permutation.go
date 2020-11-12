@@ -79,3 +79,21 @@ func delete(in []string, idx int) []string {
 
 	return out
 }
+
+// StringsRecursiveAppend builds the permutation list recursively, but with append instead of delete function
+func StringsRecursiveAppend(in []string) [][]string {
+	return perma(in, []string{}, [][]string{})
+}
+
+func perma(in []string, path []string, acc [][]string) [][]string {
+	if len(in) == 0 {
+		acc = append(acc, path)
+		return acc
+	}
+
+	for i := 0; i < len(in); i++ {
+		acc = perm(append(in[:i], in[i+1:]...), append(path, in[i]), acc)
+	}
+
+	return acc
+}
