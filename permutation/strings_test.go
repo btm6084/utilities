@@ -42,7 +42,14 @@ func TestStrings(t *testing.T) {
 
 		for i := 0; i < len(largeInput); i++ {
 			if _, ok := seen[strings.Join(largeInput[i], ",")]; !ok {
-				fmt.Println("Missing!", strings.Join(largeInput[i], ","))
+				fmt.Println(t.Name(), "Missing!", strings.Join(largeInput[i], ","))
+				t.FailNow()
+			}
+		}
+
+		for k, v := range seen {
+			if v > 1 {
+				fmt.Println(t.Name(), "TOO MANY!", k, v)
 				t.FailNow()
 			}
 		}
@@ -60,6 +67,18 @@ func TestStrings(t *testing.T) {
 			}
 
 			assert.Equal(t, len(actual), len(UniqueString(s, false)))
+
+			seen := make(map[string]int)
+			for i := 0; i < len(actual); i++ {
+				seen[strings.Join(actual[i], ",")]++
+			}
+
+			for k, v := range seen {
+				if v > 1 {
+					fmt.Println(t.Name(), "TOO MANY!", k, v)
+					t.FailNow()
+				}
+			}
 		})
 	}
 
@@ -1019,7 +1038,14 @@ func TestStringsRecursive(t *testing.T) {
 
 		for i := 0; i < len(largeInput); i++ {
 			if _, ok := seen[strings.Join(largeInput[i], ",")]; !ok {
-				fmt.Println("Missing!", strings.Join(largeInput[i], ","))
+				fmt.Println(t.Name(), "Missing!", strings.Join(largeInput[i], ","))
+				t.FailNow()
+			}
+		}
+
+		for k, v := range seen {
+			if v > 1 {
+				fmt.Println(t.Name(), "TOO MANY!", k, v)
 				t.FailNow()
 			}
 		}
@@ -1037,6 +1063,18 @@ func TestStringsRecursive(t *testing.T) {
 			}
 
 			assert.Equal(t, len(actual), len(UniqueString(s, false)))
+
+			seen := make(map[string]int)
+			for i := 0; i < len(actual); i++ {
+				seen[strings.Join(actual[i], ",")]++
+			}
+
+			for k, v := range seen {
+				if v > 1 {
+					fmt.Println(t.Name(), "TOO MANY!", k, v)
+					t.FailNow()
+				}
+			}
 		})
 	}
 
