@@ -6,6 +6,11 @@ func Ints(in []int) [][]int {
 		return [][]int{in}
 	}
 
+	// Overflow
+	if len(in) > 8 {
+		return nil
+	}
+
 	n := len(in)
 	p := n
 	for i := n - 1; i > 0; i-- {
@@ -47,6 +52,11 @@ func Ints(in []int) [][]int {
 
 // IntsRecursive builds the permutation list recursively
 func IntsRecursive(in []int) [][]int {
+	// Overflow
+	if len(in) > 8 {
+		return nil
+	}
+
 	return permInt(in, []int{}, [][]int{})
 }
 

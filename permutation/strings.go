@@ -6,6 +6,11 @@ func Strings(in []string) [][]string {
 		return [][]string{in}
 	}
 
+	// Overflow
+	if len(in) > 8 {
+		return nil
+	}
+
 	n := len(in)
 	p := n
 	for i := n - 1; i > 0; i-- {
@@ -47,6 +52,11 @@ func Strings(in []string) [][]string {
 
 // StringsRecursive builds the permutation list recursively
 func StringsRecursive(in []string) [][]string {
+	// Overflow
+	if len(in) > 8 {
+		return nil
+	}
+
 	return permStrings(in, []string{}, [][]string{})
 }
 
