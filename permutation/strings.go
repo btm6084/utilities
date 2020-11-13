@@ -65,11 +65,14 @@ func StringsRecursive(in []string) [][]string {
 }
 
 func permStrings(in []string, path []string, acc [][]string) [][]string {
-	// fmt.Println(in, path)
-	if len(in) == 0 {
-		acc = append(acc, path)
-		// fmt.Println()
+	if acc == nil {
 		return acc
+	}
+
+	if len(in) == 0 {
+		p := make([]string, len(path))
+		copy(p, path)
+		acc = append(acc, p)
 	}
 
 	for i := 0; i < len(in); i++ {
