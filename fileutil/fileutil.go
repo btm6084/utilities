@@ -136,11 +136,7 @@ func DirToArray(dir string, followSyms bool, fileFilter func(string, string) boo
 
 // DefaultDirectoryFilter returns true if the file should be kept, false if it should be discarded.
 func DefaultDirectoryFilter(path, dirName string) bool {
-	if dirName == ".git" {
-		return false
-	}
-
-	return true
+	return dirName != ".git"
 }
 
 // DefaultFileFilter excludes symlinks and binary files.
@@ -156,20 +152,12 @@ func DefaultFileFilter(path, fileName string) bool {
 
 // SymlinkFileFilter excludes symlinks and binary files.
 func SymlinkFileFilter(path, fileName string) bool {
-	if IsSymlink(path + "/" + fileName) {
-		return false
-	}
-
-	return true
+	return !IsSymlink(path + "/" + fileName)
 }
 
 // BinaryFileFilter excludes binary files.
 func BinaryFileFilter(path, fileName string) bool {
-	if IsBinaryFile(path + "/" + fileName) {
-		return false
-	}
-
-	return true
+	return !IsBinaryFile(path + "/" + fileName)
 }
 
 // FilterOutBinaries removes any binary files from the given file list.
