@@ -2,9 +2,7 @@
 package conv
 
 import (
-	"fmt"
 	"math"
-	"time"
 )
 
 // FToC converts fahrenheit to celsius
@@ -32,35 +30,4 @@ func Round(num float64) int {
 func ToFixed(num float64, precision int) float64 {
 	output := math.Pow(10, float64(precision))
 	return float64(Round(num*output)) / output
-}
-
-// RelativeTime takes a time.Duration and returns the largest denomination
-// relative time. eg. 1y for a duration over 400 days.
-func RelativeTime(dur time.Duration) string {
-	y := dur / (365 * 24 * time.Hour)
-	if y > 0 {
-		return fmt.Sprintf("%dy", y)
-	}
-
-	mo := dur / (30 * 24 * time.Hour)
-	if mo > 1 {
-		return fmt.Sprintf("%dmo", mo)
-	}
-
-	d := dur / (24 * time.Hour)
-	if d > 0 {
-		return fmt.Sprintf("%dd", d)
-	}
-
-	h := dur / time.Hour
-	if h > 0 {
-		return fmt.Sprintf("%dh", h)
-	}
-
-	m := dur / time.Minute
-	if m > 0 {
-		return fmt.Sprintf("%dm", m)
-	}
-
-	return "now"
 }
