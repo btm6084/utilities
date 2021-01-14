@@ -16,10 +16,13 @@ const (
 )
 
 // TransactionHandler creates a unique ID for every request.
-func TransactionHandler() func(http.Handler) http.Handler {
+func TransactionHandler(header string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			txnID := uuid.New().String()
+			txnID := req.Header.Get(header)
+			if txnID == "" {
+				txnID = uuid.New().String()
+			}
 
 			c := req.Context()
 			nc := context.WithValue(c, txnIDKey, txnID)
