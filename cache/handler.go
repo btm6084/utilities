@@ -51,11 +51,7 @@ func HandlerWrapper(cacheDuration int, next http.Handler) http.HandlerFunc {
 			return
 		}
 
-		key := r.Method + r.RequestURI
-
-		if r.Header.Get("range") != "" {
-			key += r.Header.Get("range")
-		}
+		key := r.Method + r.RequestURI + r.Header.Get("range")
 
 		if b, ok := Get(key); ok {
 			if s, ok := Get(key + "StatusCode"); ok {
