@@ -76,14 +76,14 @@ func HandlerWrapper(cacheDuration int, next http.Handler) http.HandlerFunc {
 			}
 
 			w.Header().Set("X-Cache-Status", "hit")
-			w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d, public", int(dur/time.Second)))
+			w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d, public", int(d/time.Second)))
 			w.Write(b.([]byte))
 			return
 		}
 
 		writer := ResponseWriterTee{w: w}
 		w.Header().Set("X-Cache-Status", "miss")
-		w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d, public", int(dur/time.Second)))
+		w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d, public", int(d/time.Second)))
 		next.ServeHTTP(&writer, r)
 
 		sc := writer.StatusCode
