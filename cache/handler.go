@@ -42,7 +42,9 @@ func (w *ResponseWriterTee) Write(b []byte) (int, error) {
 }
 
 // HandlerWrapper caches all interactions with the API based on Method, URI, and status code for the wrapped handler.
-func HandlerWrapper(next http.Handler) http.HandlerFunc {
+// cacheDuration is in seconds.
+func HandlerWrapper(cacheDuration int, next http.Handler) http.HandlerFunc {
+	d := time.Duration(cacheDuration) * time.Second
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "GET" {
 			next.ServeHTTP(w, r)
@@ -89,9 +91,9 @@ func HandlerWrapper(next http.Handler) http.HandlerFunc {
 			return
 		}
 
-		Set(key, writer.Buffer.Bytes())
-		Set(key+"headers", w.Header())
-		Set(key+"StatusCode", writer.StatusCode)
+		SetWithDuration(key, writer.Buffer.Bytes(), d)
+		SetWithDuration(key+"headers", w.Header(), d)
+		SetWithDuration(key+"StatusCode", writer.StatusCode, d)
 	})
 }
 
