@@ -43,6 +43,15 @@ func TestGet(t *testing.T) {
 	}
 
 	for n, tc := range testCases {
+		t.Run("X-Real-IP-"+cast.ToString(n), func(t *testing.T) {
+			r := &http.Request{Header: http.Header{}}
+
+			r.Header.Set("X-Real-IP", tc.Raw)
+			assert.Equal(t, tc.Expected, Get(r))
+		})
+	}
+
+	for n, tc := range testCases {
 		t.Run("RemoteAddr-"+cast.ToString(n), func(t *testing.T) {
 			r := &http.Request{RemoteAddr: tc.Raw}
 			assert.Equal(t, tc.Expected, Get(r))

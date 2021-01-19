@@ -10,6 +10,8 @@ func Get(r *http.Request) string {
 	var raw string
 
 	switch {
+	case r.Header.Get("X-Real-IP") != "":
+		raw = r.Header.Get("X-Real-IP")
 	case r.Header.Get("X-Forwarded-For") != "":
 		raw = r.Header.Get("X-Forwarded-For")
 	case r.Header.Get("X-Client-IP") != "":
