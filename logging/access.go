@@ -9,8 +9,9 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 	"time"
+
+	"github.com/btm6084/utilities/remoteip"
 )
 
 // NoopWriter satisfies the io.Writer interface, but does nothing.
@@ -32,25 +33,6 @@ func escape(in string) string {
 	b := []byte(strconv.Quote(in))
 	if len(b) > 2 {
 		return string(b[1 : len(b)-1])
-	}
-
-	return "-"
-}
-
-func getRemoteIP(req *http.Request) string {
-	if ip := req.Header.Get("X-Forwarded-For"); ip != "" {
-		ips := strings.Split(ip, ",")
-		if len(ips) > 0 {
-			return ips[len(ips)-1]
-		}
-	}
-
-	if ip := req.Header.Get("X-Client-IP"); ip != "" {
-		return ip
-	}
-
-	if ip := req.RemoteAddr; ip != "" {
-		return strings.Split(ip, ":")[0]
 	}
 
 	return "-"
@@ -93,7 +75,7 @@ func (l logWriter) logRequest(req *http.Request, start time.Time, dur time.Durat
 	txnID := TransactionFromContext(req.Context())
 
 	out := map[string]interface{}{
-		"clientIP":              escape(getRemoteIP(req)),
+		"clientIP":              escape(remoteip.Get(req)),
 		"contentType":           rw.w.Header().Get("Content-Type"),
 		"cookies":               escape(first(req.Header["Cookie"])),
 		"date":                  start.Format("2006-01-02"),
