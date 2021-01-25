@@ -83,7 +83,7 @@ func (l logWriter) logRequest(req *http.Request, start time.Time, dur time.Durat
 		"httpStatusCode":        rw.status,
 		"method":                escape(req.Method),
 		"path":                  escape(req.URL.Path),
-		"query":                 escape(req.URL.RawQuery),
+		"queryString":           escape(req.URL.RawQuery),
 		"referrer":              escape(first(req.Header["Referer"])),
 		"requestContentLength":  req.ContentLength,
 		"responseContentLength": rw.length,
