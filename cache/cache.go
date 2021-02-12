@@ -37,6 +37,11 @@ type Cacher interface {
 	Delete(metrics.Recorder, string) error
 }
 
+func init() {
+	// Start with an initial memory cache. This can be tailored by calling Initialize.
+	c = NewMemoryCache(5 * time.Minute)
+}
+
 // Initialize must be called prior to use. Do this in main.
 func Initialize(cache Cacher, defaultDuration time.Duration) {
 	c = cache
