@@ -72,14 +72,13 @@ func (l logWriter) logRequest(req *http.Request, start time.Time, dur time.Durat
 		}
 	}
 
-	txnID := TransactionFromContext(req.Context())
-
 	out := map[string]interface{}{
 		"clientIP":              escape(remoteip.Get(req)),
 		"contentType":           rw.w.Header().Get("Content-Type"),
 		"cookies":               escape(first(req.Header["Cookie"])),
 		"date":                  start.Format("2006-01-02"),
 		"duration":              dur / time.Millisecond,
+		"fromCache":             CacheStatusFromContext(req.Context()),
 		"httpStatusCode":        rw.status,
 		"method":                escape(req.Method),
 		"path":                  escape(req.URL.Path),
@@ -90,7 +89,7 @@ func (l logWriter) logRequest(req *http.Request, start time.Time, dur time.Durat
 		"serverIP":              escape(l.ip.String()),
 		"serverPort":            escape(l.port),
 		"time":                  start.Format("15:04:05"),
-		"txnID":                 txnID,
+		"txnID":                 TransactionFromContext(req.Context()),
 		"userAgent":             escape(first(req.Header["User-Agent"])),
 		"username":              escape(username),
 	}

@@ -13,7 +13,8 @@ import (
 )
 
 var (
-	client = &http.Client{
+	// ScalyrClient is the http.Client used to communicate with scalyr.
+	ScalyrClient = &http.Client{
 		Timeout: 2 * time.Second,
 	}
 )
@@ -80,7 +81,7 @@ func (w *ScalyrWriter) UpdateNow() {
 
 	if len(buf) > 0 {
 		start := time.Now()
-		resp, err := client.Post(w.url, "text/plain", bytes.NewBuffer(buf))
+		resp, err := ScalyrClient.Post(w.url, "text/plain", bytes.NewBuffer(buf))
 		if err != nil {
 			w.Println(err.Error())
 			w.errorCount++

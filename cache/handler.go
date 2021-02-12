@@ -2,8 +2,12 @@ package cache
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/btm6084/utilities/logging"
+	"github.com/btm6084/utilities/metrics"
 )
 
 var (
@@ -12,7 +16,7 @@ var (
 		"Access-Control-Allow-Headers":     true,
 		"Access-Control-Allow-Methods":     true,
 		"Access-Control-Allow-Origin":      true,
-		"X-Cache-Status":                   true,
+		"X-Cache-Hit":                      true,
 	}
 )
 
@@ -41,10 +45,10 @@ func (w *ResponseWriterTee) Write(b []byte) (int, error) {
 }
 
 // HandlerWrapper caches all interactions with the API based on Method, URI, and status code for the wrapped handler.
-// cacheDuration is in seconds.
-func HandlerWrapper(cacheDuration int, next http.Handler) http.HandlerFunc {
-	d := time.Duration(cacheDuration) * time.Second
+func HandlerWrapper(next http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		m := metrics.GetRecorder(r.Context())
+
 		if r.Method != "GET" {
 			next.ServeHTTP(w, r)
 			return
@@ -52,35 +56,49 @@ func HandlerWrapper(cacheDuration int, next http.Handler) http.HandlerFunc {
 
 		key := r.Method + r.RequestURI + r.Header.Get("range")
 
-		if b, ok := Get(key); ok {
-			if s, ok := Get(key + "StatusCode"); ok {
-				w.WriteHeader(s.(int))
+		var b string
+		if err := Get(m, key, &b); err == nil {
+			var s int
+			if err := Get(m, key+"StatusCode", &s); err == nil {
+				w.WriteHeader(s)
 			} else {
 				w.WriteHeader(200)
 			}
 
 			// Retain any headers.
-			if h, ok := Get(key + "headers"); ok {
-				if headers, ok := h.(http.Header); ok {
-					for k, v := range headers {
-						if forbiddenHeader(k) {
-							continue
-						}
+			var h http.Header
+			if err := Get(m, key+"headers", &h); err == nil {
+				for k, v := range h {
+					if forbiddenHeader(k) {
+						continue
+					}
 
-						for i := 0; i < len(v); i++ {
-							w.Header().Set(k, v[i])
-						}
+					for i := 0; i < len(v); i++ {
+						w.Header().Set(k, v[i])
 					}
 				}
 			}
 
-			w.Header().Set("X-Cache-Status", "hit")
-			w.Write(b.([]byte))
+			req := logging.RequestWithCacheStatus(r, true)
+			if r != nil && req != nil {
+				*r = *req
+			}
+
+			w.Header().Set("X-Cache-Hit", "true")
+			w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d, public", int(dur/time.Second)))
+			w.Write([]byte(b))
 			return
 		}
 
 		writer := ResponseWriterTee{w: w}
-		w.Header().Set("X-Cache-Status", "miss")
+		w.Header().Set("X-Cache-Hit", "false")
+		w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d, public", int(dur/time.Second)))
+
+		req := logging.RequestWithCacheStatus(r, false)
+		if r != nil && req != nil {
+			*r = *req
+		}
+
 		next.ServeHTTP(&writer, r)
 
 		sc := writer.StatusCode
@@ -88,9 +106,9 @@ func HandlerWrapper(cacheDuration int, next http.Handler) http.HandlerFunc {
 			return
 		}
 
-		SetWithDuration(key, writer.Buffer.Bytes(), d)
-		SetWithDuration(key+"headers", w.Header(), d)
-		SetWithDuration(key+"StatusCode", writer.StatusCode, d)
+		Set(m, key, string(writer.Buffer.Bytes()))
+		Set(m, key+"headers", w.Header())
+		Set(m, key+"StatusCode", writer.StatusCode)
 	})
 }
 
