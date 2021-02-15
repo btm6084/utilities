@@ -10,7 +10,7 @@ import (
 
 const (
 	// cacheStatusKey is the key under which we store the cache status in context.
-	cacheStatusKey key = 0
+	cacheStatusKey key = 1
 )
 
 // CacheStatusFromContext retrieves the cache status from the given context.
