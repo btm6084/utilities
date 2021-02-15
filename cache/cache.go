@@ -22,11 +22,18 @@ var (
 	// ErrCacheNil is returned when caching falied due to the provided Cacher being nil
 	ErrCacheNil = errors.New("cache is nil")
 
+	// ErrCacheDisabled is returned when caching falied due to caching being disabled
+	ErrCacheDisabled = errors.New("cache is disabled")
+
 	// ErrDeserialize is returned when cache extraction failed due to deserialization errors.
 	ErrDeserialize = errors.New("cached value could not be deserialized")
 
 	// ErrNotFound is returned when no data was found
 	ErrNotFound = errors.New("not found")
+
+	// Enabled allows caching to be turned on and off. This is useful for turning cache off
+	// via environment variables.
+	Enabled = true
 )
 
 // Cacher provides an interface for working with a cache store.
@@ -38,18 +45,30 @@ type Cacher interface {
 }
 
 func init() {
+	if !Enabled {
+		return
+	}
+
 	// Start with an initial memory cache. This can be tailored by calling Initialize.
 	c = NewMemoryCache(5 * time.Minute)
 }
 
 // Initialize must be called prior to use. Do this in main.
 func Initialize(cache Cacher, defaultDuration time.Duration) {
+	if !Enabled {
+		return
+	}
+
 	c = cache
 	dur = defaultDuration
 }
 
 // Get a value from cache.
 func Get(r metrics.Recorder, key string, container interface{}) error {
+	if !Enabled {
+		return ErrCacheDisabled
+	}
+
 	if c == nil {
 		return ErrCacheNil
 	}
@@ -74,11 +93,19 @@ func Get(r metrics.Recorder, key string, container interface{}) error {
 
 // Set a value in cache.
 func Set(m metrics.Recorder, key string, value interface{}) error {
+	if !Enabled {
+		return ErrCacheDisabled
+	}
+
 	return SetWithDuration(m, key, value, dur)
 }
 
 // SetWithDuration sets a value in cache.
 func SetWithDuration(m metrics.Recorder, key string, value interface{}, d time.Duration) error {
+	if !Enabled {
+		return ErrCacheDisabled
+	}
+
 	if c == nil {
 		return ErrCacheNil
 	}
