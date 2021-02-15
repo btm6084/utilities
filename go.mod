@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/btm6084/gojson v1.0.7
-	github.com/go-redis/redis/v8 v8.5.0
+	github.com/go-redis/redis/v8 v8.4.10
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/uuid v1.2.0
 	github.com/kr/text v0.2.0 // indirect
