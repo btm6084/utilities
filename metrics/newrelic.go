@@ -48,7 +48,7 @@ func (nr *NewRelic) DatabaseSegment(product, query string, args ...interface{}) 
 	}
 
 	s := newrelic.DatastoreSegment{
-		StartTime:          newrelic.StartSegmentNow(nr.Transaction),
+		StartTime:          nr.Transaction.StartSegmentNow(),
 		Product:            pdt,
 		Collection:         nr.Collection,
 		Operation:          nr.Operation,
@@ -61,7 +61,7 @@ func (nr *NewRelic) DatabaseSegment(product, query string, args ...interface{}) 
 
 // Segment records a segment that occured during the given transaction.
 func (nr *NewRelic) Segment(name string) func() {
-	return newrelic.StartSegment(nr.Transaction, name).End
+	return nr.Transaction.StartSegment(name).End
 }
 
 func argsToMap(args []interface{}) map[string]interface{} {

@@ -148,7 +148,7 @@ func handleCacheableRequest(next http.Handler, w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	SetWithDuration(m, key, string(writer.Buffer.Bytes()), d)
+	SetWithDuration(m, key, writer.Buffer.String(), d)
 	SetWithDuration(m, key+"headers", w.Header(), d)
 	SetWithDuration(m, key+"StatusCode", writer.StatusCode, d)
 }

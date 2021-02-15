@@ -29,21 +29,21 @@ func PanicRecovery(err *error, logErrors bool) func() {
 		if r := recover(); r != nil && err != nil {
 			s, i, _ := identifyPanic()
 
-			switch r.(type) {
+			switch r := r.(type) {
 			case error:
 				if logErrors {
-					log.WithFields(log.Fields{"panic": "error", "file": s, "line_num": i}).Error(r.(error))
+					log.WithFields(log.Fields{"panic": "error", "file": s, "line_num": i}).Error(r)
 				}
 
 				// Create a new error and assign it to our pointer.
 				*err = r.(error)
 			case string:
 				if logErrors {
-					log.WithFields(log.Fields{"panic": "string", "file": s, "line_num": i}).Error(r.(string))
+					log.WithFields(log.Fields{"panic": "string", "file": s, "line_num": i}).Error(r)
 				}
 
 				// Create a new error and assign it to our pointer.
-				*err = errors.New(r.(string))
+				*err = errors.New(r)
 			default:
 				msg := fmt.Sprintf("%+v", r)
 
