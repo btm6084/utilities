@@ -35,14 +35,25 @@ type Client struct {
 }
 
 // New creates a new client.
-func New(server string, requestTimeout time.Duration) *Client {
+func New(server string, requestTimeout time.Duration, clientName string) *Client {
 	return &Client{
 		RDB: redis.NewClient(&redis.Options{
-			Addr:     server,
-			Password: "", // no password set
-			DB:       0,  // use default DB
+			Addr:      server,
+			Password:  "", // no password set
+			DB:        0,  // use default DB
+			OnConnect: onConnect(clientName),
 		}),
 		requestTimeout: requestTimeout,
+	}
+}
+
+func onConnect(clientName string) func(context.Context, *redis.Conn) error {
+	return func(ctx context.Context, cn *redis.Conn) error {
+		p := cn.Pipeline()
+		csn := p.ClientSetName(ctx, clientName)
+		p.Exec(ctx)
+
+		return csn.Err()
 	}
 }
 
