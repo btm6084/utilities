@@ -13,7 +13,6 @@ import (
 
 	"github.com/btm6084/gojson"
 	"github.com/btm6084/utilities/metrics"
-	"github.com/spf13/cast"
 )
 
 var (
@@ -111,21 +110,16 @@ func SetWithDuration(m metrics.Recorder, key string, value interface{}, d time.D
 		return ErrCacheNil
 	}
 
-	var data string
-	switch v := value.(type) {
-	case string:
-		data = v
-	case []byte:
-		data = cast.ToString(v)
-	default:
-		raw, err := json.Marshal(v)
-		if err != nil {
-			return err
-		}
-
-		data = string(raw)
+	v := value
+	if d, ok := value.([]byte); ok {
+		v = string(d)
 	}
 
-	c.SetWithDuration(m, key, data, d)
+	raw, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	c.SetWithDuration(m, key, string(raw), d)
 	return nil
 }
