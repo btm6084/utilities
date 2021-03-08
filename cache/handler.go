@@ -123,6 +123,7 @@ func handlerTryCache(w http.ResponseWriter, r *http.Request, m metrics.Recorder,
 		}
 
 		w.Header().Set("X-Cache-Hit", "true")
+		w.Header().Set("Content-Length", cast.ToString(len(b)))
 		w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d, public", int(dur/time.Second)))
 		w.Write([]byte(b))
 		return true
