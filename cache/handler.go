@@ -94,7 +94,7 @@ func HandlerWrapper(cacheDuration int, next http.Handler) http.HandlerFunc {
 
 func handlerTryCache(w http.ResponseWriter, r *http.Request, m metrics.Recorder, key string) bool {
 
-	var b string
+	var b []byte
 	if err := Get(m, key, &b); err == nil {
 		var s int
 		if err := Get(m, key+"StatusCode", &s); err == nil {
@@ -124,7 +124,7 @@ func handlerTryCache(w http.ResponseWriter, r *http.Request, m metrics.Recorder,
 
 		w.Header().Set("X-Cache-Hit", "true")
 		w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d, public", int(dur/time.Second)))
-		w.Write([]byte(b))
+		w.Write(b)
 		return true
 	}
 
@@ -148,7 +148,7 @@ func handleCacheableRequest(next http.Handler, w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	SetWithDuration(m, key, writer.Buffer.String(), d)
+	SetWithDuration(m, key, writer.Buffer.Bytes(), d)
 	SetWithDuration(m, key+"headers", w.Header(), d)
 	SetWithDuration(m, key+"StatusCode", writer.StatusCode, d)
 }
