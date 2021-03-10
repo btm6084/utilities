@@ -41,10 +41,16 @@ func (nr *NewRelic) DatabaseSegment(product, query string, args ...interface{}) 
 	switch product {
 	case "mssql":
 		pdt = newrelic.DatastoreMSSQL
+	case "mysql":
+		pdt = newrelic.DatastoreMySQL
 	case "postgres":
 		pdt = newrelic.DatastorePostgres
 	case "redis":
 		pdt = newrelic.DatastoreRedis
+	case "sqlite3", "sqlite":
+		pdt = newrelic.DatastoreSQLite
+	default:
+		pdt = newrelic.DatastoreProduct(product)
 	}
 
 	s := newrelic.DatastoreSegment{
