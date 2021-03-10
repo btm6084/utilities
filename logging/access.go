@@ -88,7 +88,7 @@ func (l logWriter) logRequest(req *http.Request, start time.Time, dur time.Durat
 		"responseContentLength": rw.length,
 		"serverIP":              escape(l.ip.String()),
 		"serverPort":            escape(l.port),
-		"time":                  start.Format("15:04:05"),
+		"time":                  start.Format("15:04:05.000"),
 		"txnID":                 TransactionFromContext(req.Context()),
 		"userAgent":             escape(first(req.Header["User-Agent"])),
 		"username":              escape(username),
