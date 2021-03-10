@@ -43,6 +43,6 @@ func TransactionFromContext(ctx context.Context) string {
 }
 
 // TxnFields builds a log.Fields object when all you need is a transactionID.
-func TxnFields(r *http.Request) log.Fields {
-	return log.Fields{"txnID": TransactionFromContext(r.Context())}
+func TxnFields(ctx context.Context) log.Fields {
+	return log.Fields{"txnID": TransactionFromContext(ctx)}
 }
