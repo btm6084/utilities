@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/btm6084/utilities/stack"
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 )
@@ -24,11 +25,13 @@ func TransactionHandler(header string) func(http.Handler) http.Handler {
 				txnID = uuid.New().String()
 			}
 
-			c := req.Context()
-			nc := context.WithValue(c, txnIDKey, txnID)
-			next.ServeHTTP(w, req.WithContext(nc))
+			next.ServeHTTP(w, req.WithContext(ContextWithTransaction(req.Context(), txnID)))
 		})
 	}
+}
+
+func ContextWithTransaction(ctx context.Context, txnID string) context.Context {
+	return context.WithValue(ctx, txnIDKey, txnID)
 }
 
 // TransactionFromContext retrieves the txnID from the given context.
@@ -44,5 +47,6 @@ func TransactionFromContext(ctx context.Context) string {
 
 // TxnFields builds a log.Fields object when all you need is a transactionID.
 func TxnFields(ctx context.Context) log.Fields {
-	return log.Fields{"txnID": TransactionFromContext(ctx)}
+	f, l := stack.Trace(1) // 1 to refer to the caller of this fn.
+	return log.Fields{"txnID": TransactionFromContext(ctx), "stacktrace": map[string]interface{}{"file": f, "line": l}}
 }
