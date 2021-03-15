@@ -18,5 +18,5 @@ func TestTxnFields(t *testing.T) {
 	assert.Equal(t, st["line"], 13)
 
 	f := st["file"].(string)
-	assert.True(t, strings.HasSuffix(f, "github.com/btm6084/utilities/logging/transaction_test.go"), f)
+	assert.True(t, strings.HasSuffix(f, "utilities/logging/transaction_test.go"), f)
 }
