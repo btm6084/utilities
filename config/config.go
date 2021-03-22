@@ -205,7 +205,7 @@ func GetInt(key string) int {
 	return config.GetInt(key)
 }
 
-// GetBool returns the value of the given configuration element at the specified key as an bool,
+// GetBool returns the value of the given configuration element at the specified key as a bool,
 // regardless of the original type at that key.
 // Key is a valid JSON Path (https://goessner.net/articles/JsonPath/)
 func GetBool(key string) bool {
@@ -215,6 +215,18 @@ func GetBool(key string) bool {
 	}
 
 	return config.GetBool(key)
+}
+
+// GetFloat returns the value of the given configuration element at the specified key as a float64,
+// regardless of the original type at that key.
+// Key is a valid JSON Path (https://goessner.net/articles/JsonPath/)
+func GetFloat(key string) float64 {
+	if config == nil || len(config.Keys) == 0 {
+		log.Println(ErrNoConfig)
+		return 0.0
+	}
+
+	return config.GetFloat(key)
 }
 
 // GetMapStringBool returns the value of the given configuration element at the specified key as map[string]bool,
@@ -251,6 +263,18 @@ func GetMapStringInt(key string) map[string]int {
 	}
 
 	return config.Get(key).ToMapStringInt()
+}
+
+// GetMapStringFloat returns the value of the given configuration element at the specified key as map[string]int,
+// regardless of the original type at that key.
+// Key is a valid JSON Path (https://goessner.net/articles/JsonPath/)
+func GetMapStringFloat(key string) map[string]float64 {
+	if config == nil || len(config.Keys) == 0 {
+		log.Println(ErrNoConfig)
+		return nil
+	}
+
+	return config.Get(key).ToMapStringFloat()
 }
 
 // GetMapStringInterface returns the value of the given configuration element at the specified key as map[string]interface{},
