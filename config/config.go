@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"os"
 	"time"
 
@@ -39,6 +40,8 @@ var (
 	updating         bool
 
 	defaultTimeout = 10 * time.Second
+
+	ErrNotValidJSON = errors.New("base config must be valid json")
 )
 
 // fetcher is used to retrieve override configs and a response to a query is expected to return JSON.
@@ -61,7 +64,11 @@ var (
 // "defaultTimeout":    "TIMEOUT"
 // "env":               "ENV"
 // "dbConnectString":   "DB_CONNECT_STRING"
-func Init(f godb.JSONFetcher, configFetchPath string, baseConfig map[string]string, envMap map[string]string, updateFrequency time.Duration) error {
+func Init(f godb.JSONFetcher, configFetchPath string, baseConfig []byte, envMap map[string]string, updateFrequency time.Duration) error {
+	if !gojson.IsJSON(baseConfig) {
+		return ErrNotValidJSON
+	}
+
 	if updating {
 		updateStopSignal <- true
 		updating = false
@@ -72,7 +79,9 @@ func Init(f godb.JSONFetcher, configFetchPath string, baseConfig map[string]stri
 		return err
 	}
 
-	go updater(f, configFetchPath, baseConfig, envMap, updateFrequency)
+	if updateFrequency > 0 {
+		go updater(f, configFetchPath, baseConfig, envMap, updateFrequency)
+	}
 
 	return nil
 }
@@ -85,9 +94,9 @@ func StopUpdates() {
 	}
 }
 
-func updater(f godb.JSONFetcher, configFetchPath string, baseConfig map[string]string, envMap map[string]string, updateFrequency time.Duration) error {
+func updater(f godb.JSONFetcher, configFetchPath string, baseConfig []byte, envMap map[string]string, updateFrequency time.Duration) error {
 	updating = true
-	ticker := time.NewTicker(500 * time.Millisecond)
+	ticker := time.NewTicker(updateFrequency)
 
 	for {
 		select {
@@ -96,19 +105,21 @@ func updater(f godb.JSONFetcher, configFetchPath string, baseConfig map[string]s
 		case <-ticker.C:
 			err := update(f, configFetchPath, baseConfig, envMap)
 			if err != nil {
-				log.WithFields(log.Fields{"error": err}).Error("configuration update failed")
+				log.WithFields(log.Fields{
+					"error":   err,
+					"package": "github.com/btm6084/utilities/config",
+				}).Error("configuration update failed")
 			}
 		}
 	}
 }
 
-func update(f godb.JSONFetcher, configFetchPath string, baseConfig map[string]string, envMap map[string]string) error {
-	var base, fetched, envConfig []byte
+func update(f godb.JSONFetcher, configFetchPath string, baseConfig []byte, envMap map[string]string) error {
+	var fetched, envConfig []byte
 	var err error
 
-	base, err = json.Marshal(baseConfig)
-	if err != nil {
-		return err
+	fields := log.Fields{
+		"package": "github.com/btm6084/utilities/config",
 	}
 
 	env = make(map[string]string)
@@ -120,22 +131,36 @@ func update(f godb.JSONFetcher, configFetchPath string, baseConfig map[string]st
 	}
 
 	// Merge base <- fetched <- env
-	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
-	defer cancel()
-
 	if fetcher != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+		defer cancel()
+
 		fetched, err = fetcher.FetchJSON(ctx, configFetchPath)
 		if err != nil {
-			log.Println(err)
+			fields["context"] = "update FetchJSON"
+			log.WithFields(fields).Println(err)
 		}
 	}
 
 	envConfig, err = json.Marshal(env)
 	if err != nil {
-		log.Println(err)
+		fields["context"] = "update marshal env"
+		log.WithFields(fields).Println(err)
 	}
 
-	c := merge(merge(base, fetched), envConfig)
+	if !gojson.IsJSON(baseConfig) {
+		baseConfig = []byte(`{}`)
+	}
+
+	if !gojson.IsJSON(fetched) {
+		fetched = []byte(`{}`)
+	}
+
+	if !gojson.IsJSON(envConfig) {
+		envConfig = []byte(`{}`)
+	}
+
+	c := merge(merge(baseConfig, fetched), envConfig)
 	config, err = gojson.NewJSONReader(c)
 	if err != nil {
 		return err
@@ -148,7 +173,7 @@ func update(f godb.JSONFetcher, configFetchPath string, baseConfig map[string]st
 func merge(a, b []byte) []byte {
 	out, err := gojson.MergeJSON(a, b)
 	if err != nil {
-		log.Println(err)
+		log.WithFields(log.Fields{"package": "github.com/btm6084/utilities/config", "context": "merge MergeJSON"}).Println(err)
 		return a
 	}
 
