@@ -41,6 +41,7 @@ var (
 
 	defaultTimeout = 10 * time.Second
 
+	ErrNoConfig     = errors.New("no config available. did you call init?")
 	ErrNotValidJSON = errors.New("base config must be valid json")
 )
 
@@ -184,6 +185,11 @@ func merge(a, b []byte) []byte {
 // regardless of the original type at that key.
 // Key is a valid JSON Path (https://goessner.net/articles/JsonPath/)
 func GetString(key string) string {
+	if config == nil || len(config.Keys) == 0 {
+		log.Println(ErrNoConfig)
+		return ""
+	}
+
 	return config.GetString(key)
 }
 
@@ -191,6 +197,11 @@ func GetString(key string) string {
 // regardless of the original type at that key.
 // Key is a valid JSON Path (https://goessner.net/articles/JsonPath/)
 func GetInt(key string) int {
+	if config == nil || len(config.Keys) == 0 {
+		log.Println(ErrNoConfig)
+		return 0
+	}
+
 	return config.GetInt(key)
 }
 
@@ -198,6 +209,11 @@ func GetInt(key string) int {
 // regardless of the original type at that key.
 // Key is a valid JSON Path (https://goessner.net/articles/JsonPath/)
 func GetBool(key string) bool {
+	if config == nil || len(config.Keys) == 0 {
+		log.Println(ErrNoConfig)
+		return false
+	}
+
 	return config.GetBool(key)
 }
 
@@ -205,6 +221,11 @@ func GetBool(key string) bool {
 // regardless of the original type at that key.
 // Key is a valid JSON Path (https://goessner.net/articles/JsonPath/)
 func GetMapStringBool(key string) map[string]bool {
+	if config == nil || len(config.Keys) == 0 {
+		log.Println(ErrNoConfig)
+		return nil
+	}
+
 	return config.Get(key).ToMapStringBool()
 }
 
@@ -212,6 +233,11 @@ func GetMapStringBool(key string) map[string]bool {
 // regardless of the original type at that key.
 // Key is a valid JSON Path (https://goessner.net/articles/JsonPath/)
 func GetMapStringString(key string) map[string]string {
+	if config == nil || len(config.Keys) == 0 {
+		log.Println(ErrNoConfig)
+		return nil
+	}
+
 	return config.Get(key).ToMapStringString()
 }
 
@@ -219,6 +245,11 @@ func GetMapStringString(key string) map[string]string {
 // regardless of the original type at that key.
 // Key is a valid JSON Path (https://goessner.net/articles/JsonPath/)
 func GetMapStringInt(key string) map[string]int {
+	if config == nil || len(config.Keys) == 0 {
+		log.Println(ErrNoConfig)
+		return nil
+	}
+
 	return config.Get(key).ToMapStringInt()
 }
 
@@ -226,6 +257,11 @@ func GetMapStringInt(key string) map[string]int {
 // regardless of the original type at that key.
 // Key is a valid JSON Path (https://goessner.net/articles/JsonPath/)
 func GetMapStringInterface(key string) map[string]interface{} {
+	if config == nil || len(config.Keys) == 0 {
+		log.Println(ErrNoConfig)
+		return nil
+	}
+
 	return config.Get(key).ToMapStringInterface()
 }
 
@@ -233,7 +269,10 @@ func GetMapStringInterface(key string) map[string]interface{} {
 // as it exists at that key.
 // Key is a valid JSON Path (https://goessner.net/articles/JsonPath/)
 func Get(key string) interface{} {
-	config.GetInterface(key)
+	if config == nil || len(config.Keys) == 0 {
+		log.Println(ErrNoConfig)
+		return nil
+	}
 
-	return nil
+	return config.GetInterface(key)
 }
