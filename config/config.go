@@ -53,18 +53,18 @@ var (
 // Configuration that is expected to be overridden by environment variables should be at the root level
 // and be simple values. Secrets should (probably) come from the environment and not be comitted with code.
 //
-// EnvMap maps a BaseConfig key onto the Environmental Key that overrides it.
+// EnvMap maps an environment key onto the key in basic config to override.
 // Environmental configurations must be strings in the BaseConfig, though you can use the Get*
 // to convert to a desired type.
 // Environmental configs are those things which are:
 //     * Vital to the functionality of the service; or
 //     * Secret in nature
 // ex:
-// "host":              "HOST"
-// "port":              "PORT"
-// "defaultTimeout":    "TIMEOUT"
-// "env":               "ENV"
-// "dbConnectString":   "DB_CONNECT_STRING"
+// "HOST":              "host"
+// "PORT":              "port"
+// "TIMEOUT":           "defaultTimeout"
+// "ENV":               "env"
+// "DB_CONNECT_STRING": "dbConnectString"
 func Init(f godb.JSONFetcher, configFetchPath string, baseConfig []byte, envMap map[string]string, updateFrequency time.Duration) error {
 	if !gojson.IsJSON(baseConfig) {
 		return ErrNotValidJSON
@@ -124,7 +124,7 @@ func update(f godb.JSONFetcher, configFetchPath string, baseConfig []byte, envMa
 	}
 
 	env = make(map[string]string)
-	for cName, envKey := range envMap {
+	for envKey, cName := range envMap {
 		envVal := os.Getenv(envKey)
 		if envVal != "" {
 			env[cName] = envVal
