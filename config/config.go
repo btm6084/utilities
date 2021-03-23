@@ -32,9 +32,6 @@ var (
 	// "dbConnectString":   "DB_CONNECT_STRING",
 	env map[string]string
 
-	// fetcher is used to retrieve override configs and a response to a query is expected to return JSON.
-	fetcher godb.JSONFetcher
-
 	// updateStopSignal stops the updater when written to. Only a single updater is allowed to run at a time.
 	updateStopSignal = make(chan bool, 1)
 	updating         bool
@@ -132,11 +129,11 @@ func update(f godb.JSONFetcher, configFetchPath string, baseConfig []byte, envMa
 	}
 
 	// Merge base <- fetched <- env
-	if fetcher != nil {
+	if f != nil {
 		ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 		defer cancel()
 
-		fetched, err = fetcher.FetchJSON(ctx, configFetchPath)
+		fetched, err = f.FetchJSON(ctx, configFetchPath)
 		if err != nil {
 			fields["context"] = "update FetchJSON"
 			log.WithFields(fields).Println(err)
