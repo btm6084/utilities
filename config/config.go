@@ -13,6 +13,8 @@ import (
 )
 
 var (
+	rawConfig []byte
+
 	// config is considered to be a singleton across an entire program.
 	// Configuration that is expected to be overridden by environment variables should be at the root level
 	// and be simple values. Secrets should (probably) come from the environment and not be comitted with code.
@@ -67,18 +69,35 @@ func Init(f godb.JSONFetcher, configFetchPath string, baseConfig []byte, envMap 
 		return ErrNotValidJSON
 	}
 
+	rawConfig = baseConfig
+
 	if updating {
 		updateStopSignal <- true
 		updating = false
 	}
 
-	err := update(f, configFetchPath, baseConfig, envMap)
+	err := update(f, configFetchPath, envMap)
 	if err != nil {
 		return err
 	}
 
 	if updateFrequency > 0 {
-		go updater(f, configFetchPath, baseConfig, envMap, updateFrequency)
+		go updater(f, configFetchPath, envMap, updateFrequency)
+	}
+
+	return nil
+}
+
+// SetConfig specifies a configuration value with no updating.
+func SetConfig(b []byte) error {
+	StopUpdates()
+
+	rawConfig = b
+
+	var err error
+	config, err = gojson.NewJSONReader(rawConfig)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -92,7 +111,7 @@ func StopUpdates() {
 	}
 }
 
-func updater(f godb.JSONFetcher, configFetchPath string, baseConfig []byte, envMap map[string]string, updateFrequency time.Duration) error {
+func updater(f godb.JSONFetcher, configFetchPath string, envMap map[string]string, updateFrequency time.Duration) error {
 	updating = true
 	ticker := time.NewTicker(updateFrequency)
 
@@ -101,7 +120,7 @@ func updater(f godb.JSONFetcher, configFetchPath string, baseConfig []byte, envM
 		case <-updateStopSignal:
 			return nil
 		case <-ticker.C:
-			err := update(f, configFetchPath, baseConfig, envMap)
+			err := update(f, configFetchPath, envMap)
 			if err != nil {
 				log.WithFields(log.Fields{
 					"error":   err,
@@ -112,7 +131,7 @@ func updater(f godb.JSONFetcher, configFetchPath string, baseConfig []byte, envM
 	}
 }
 
-func update(f godb.JSONFetcher, configFetchPath string, baseConfig []byte, envMap map[string]string) error {
+func update(f godb.JSONFetcher, configFetchPath string, envMap map[string]string) error {
 	var fetched, envConfig []byte
 	var err error
 
@@ -146,8 +165,8 @@ func update(f godb.JSONFetcher, configFetchPath string, baseConfig []byte, envMa
 		log.WithFields(fields).Println(err)
 	}
 
-	if !gojson.IsJSON(baseConfig) {
-		baseConfig = []byte(`{}`)
+	if !gojson.IsJSON(rawConfig) {
+		rawConfig = []byte(`{}`)
 	}
 
 	if !gojson.IsJSON(fetched) {
@@ -158,11 +177,13 @@ func update(f godb.JSONFetcher, configFetchPath string, baseConfig []byte, envMa
 		envConfig = []byte(`{}`)
 	}
 
-	c := merge(merge(baseConfig, fetched), envConfig)
+	c := merge(merge(rawConfig, fetched), envConfig)
 	config, err = gojson.NewJSONReader(c)
 	if err != nil {
 		return err
 	}
+
+	rawConfig = c
 
 	return nil
 }
