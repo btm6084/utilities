@@ -9,6 +9,7 @@ import (
 
 	"github.com/btm6084/godb"
 	"github.com/btm6084/gojson"
+	"github.com/btm6084/utilities/stack"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -19,12 +20,22 @@ var (
 
 // merge b on top of a; get a back if it fails.
 func merge(a, b []byte) []byte {
+	aEmpty := gojson.IsEmptyObject(a)
+	bEmpty := gojson.IsEmptyObject(b)
+
+	if !aEmpty && bEmpty {
+		return a
+	}
+
+	if aEmpty && !bEmpty {
+		return b
+	}
+
 	out, err := gojson.MergeJSON(a, b)
 	if err != nil {
 		log.WithFields(log.Fields{"package": "github.com/btm6084/utilities/config", "context": "merge MergeJSON"}).Println(err)
 		return a
 	}
-
 	return out
 }
 
@@ -33,12 +44,36 @@ type Configuration struct {
 	RawConfig []byte
 	EnvMap    map[string]string
 
+	envConfig     []byte
+	fetchedConfig []byte
+
 	updateStopSignal chan bool
 	updating         bool
 	updateFrequency  time.Duration
 }
 
+func (c *Configuration) parseEnvConfig() ([]byte, error) {
+	env := make(map[string]string)
+	for envKey, cName := range c.EnvMap {
+		envVal := os.Getenv(envKey)
+		if envVal != "" {
+			env[cName] = envVal
+		}
+	}
+
+	envConfig, err := json.Marshal(env)
+	if err != nil {
+		return []byte(`{}`), err
+	}
+
+	return envConfig, nil
+}
+
 func NewLocalConfiguration(baseConfig []byte, envMap map[string]string) (*Configuration, error) {
+	if !gojson.IsJSON(baseConfig) {
+		return nil, ErrNotValidJSON
+	}
+
 	c := &Configuration{
 		RawConfig:        baseConfig,
 		EnvMap:           envMap,
@@ -47,7 +82,13 @@ func NewLocalConfiguration(baseConfig []byte, envMap map[string]string) (*Config
 		updateFrequency:  0,
 	}
 
-	err := c.update(nil, "")
+	var err error
+	c.envConfig, err = c.parseEnvConfig()
+	if err != nil {
+		log.WithFields(stack.TraceFields()).Error(err)
+	}
+
+	err = c.update(nil, "")
 	return c, err
 }
 
@@ -64,7 +105,13 @@ func NewRemoteConfiguration(baseConfig []byte, envMap map[string]string, f godb.
 		updateFrequency:  updateFrequency,
 	}
 
-	err := c.update(f, settingsPath)
+	var err error
+	c.envConfig, err = c.parseEnvConfig()
+	if err != nil {
+		log.WithFields(stack.TraceFields()).Error(err)
+	}
+
+	err = c.update(f, settingsPath)
 	if err != nil {
 		return nil, err
 	}
@@ -87,56 +134,28 @@ func (c *Configuration) updater(f godb.JSONFetcher, path string) error {
 		case <-ticker.C:
 			err := c.update(f, path)
 			if err != nil {
-				log.WithFields(log.Fields{
-					"error":   err,
-					"package": "github.com/btm6084/utilities/config",
-				}).Error("configuration update failed")
+				fields := stack.TraceFields()
+				fields["error"] = err
+				log.WithFields(fields).Error("configuration update failed")
 			}
 		}
 	}
 }
 
 func (c *Configuration) update(f godb.JSONFetcher, path string) error {
-	var fetched, envConfig []byte
-	var err error
-
-	fields := log.Fields{
-		"package": "github.com/btm6084/utilities/config",
-	}
-
-	env := make(map[string]string)
-	for envKey, cName := range c.EnvMap {
-		envVal := os.Getenv(envKey)
-		if envVal != "" {
-			env[cName] = envVal
-		}
-	}
-
-	// Merge base <- fetched <- env
-	if f != nil {
-		// It's assumed that the root url for the fetcher will provide the configuration data.
-		fetched, err = f.FetchJSON(context.Background(), path)
-		if err != nil {
-			fields["context"] = "update FetchJSON"
-			log.WithFields(fields).Println(err)
-		}
-	}
-
-	envConfig, err = json.Marshal(env)
+	fetchedConfig, err := f.FetchJSON(context.Background(), path)
 	if err != nil {
-		fields["context"] = "update marshal env"
-		log.WithFields(fields).Println(err)
+		return err
 	}
 
-	if !gojson.IsJSON(fetched) {
-		fetched = []byte(`{}`)
+	// Nothing to do here.
+	if string(c.fetchedConfig) == string(fetchedConfig) {
+		return nil
 	}
 
-	if !gojson.IsJSON(envConfig) {
-		envConfig = []byte(`{}`)
-	}
+	c.fetchedConfig = fetchedConfig
 
-	cfg := merge(merge(c.RawConfig, fetched), envConfig)
+	cfg := merge(merge(c.RawConfig, c.fetchedConfig), c.envConfig)
 	reader, err := gojson.NewJSONReader(cfg)
 	if err != nil {
 		return err
