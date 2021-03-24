@@ -124,7 +124,7 @@ func NewRemoteConfiguration(baseConfig []byte, envMap map[string]string, f godb.
 		return nil, err
 	}
 
-	if c.updateFrequency > 0 {
+	if f != nil && c.updateFrequency > 0 {
 		go c.updater(f, settingsPath)
 	}
 
