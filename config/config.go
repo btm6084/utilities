@@ -88,7 +88,13 @@ func NewLocalConfiguration(baseConfig []byte, envMap map[string]string) (*Config
 		log.WithFields(stack.TraceFields()).Error(err)
 	}
 
-	err = c.update(nil, "")
+	c.RawConfig = merge(c.RawConfig, c.envConfig)
+	reader, err := gojson.NewJSONReader(c.RawConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	c.Config = reader
 	return c, err
 }
 
@@ -111,13 +117,24 @@ func NewRemoteConfiguration(baseConfig []byte, envMap map[string]string, f godb.
 		log.WithFields(stack.TraceFields()).Error(err)
 	}
 
+	c.RawConfig = merge(c.RawConfig, c.envConfig)
+
 	err = c.update(f, settingsPath)
-	if err != nil {
+	if err != nil && err != godb.ErrNotFound {
 		return nil, err
 	}
 
 	if c.updateFrequency > 0 {
 		go c.updater(f, settingsPath)
+	}
+
+	if c.Config == nil {
+		reader, err := gojson.NewJSONReader(c.RawConfig)
+		if err != nil {
+			return nil, err
+		}
+
+		c.Config = reader
 	}
 
 	return c, nil
@@ -143,6 +160,10 @@ func (c *Configuration) updater(f godb.JSONFetcher, path string) error {
 }
 
 func (c *Configuration) update(f godb.JSONFetcher, path string) error {
+	if f == nil {
+		return nil
+	}
+
 	fetchedConfig, err := f.FetchJSON(context.Background(), path)
 	if err != nil {
 		return err
@@ -155,6 +176,7 @@ func (c *Configuration) update(f godb.JSONFetcher, path string) error {
 
 	c.fetchedConfig = fetchedConfig
 
+	// env must overwrite anything pulled from the remote settings
 	cfg := merge(merge(c.RawConfig, c.fetchedConfig), c.envConfig)
 	reader, err := gojson.NewJSONReader(cfg)
 	if err != nil {
