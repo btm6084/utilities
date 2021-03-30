@@ -39,7 +39,13 @@ func (w *ScalyrWriter) Write(p []byte) (int, error) {
 		w.buffer.Write(p)
 		w.lock.Unlock()
 	}
-	return w.tee.Write(p)
+	n, err := w.tee.Write(p)
+
+	if w.buffer.Len() > 2000000 {
+		w.UpdateNow()
+	}
+
+	return n, err
 }
 
 // CreateScalyrWriter will create an io.Writer which will tee all log writes
