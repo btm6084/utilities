@@ -2,7 +2,6 @@ package logging
 
 import (
 	"bytes"
-	"encoding/json"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -10,6 +9,9 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/btm6084/gojson"
+	"github.com/spf13/cast"
 )
 
 var (
@@ -17,6 +19,10 @@ var (
 	ScalyrClient = &http.Client{
 		Timeout: 2 * time.Second,
 	}
+
+	scalyrBuffer      [][]byte
+	scalyrLock        sync.Mutex
+	scalyrBufferLimit = 100000000
 )
 
 // ScalyrWriter will buffer all log writes for logging to scalyr, then
@@ -24,26 +30,46 @@ var (
 type ScalyrWriter struct {
 	// tee provides an io.Writer that receives all log entries, along with the entries written to scalyr.
 	// popular options include os.Stdout and ioutil.Discard (/dev/null)
-	tee        io.Writer
-	buffer     bytes.Buffer
-	url        string
-	lock       sync.Mutex
-	errorCount int
+	tee            io.Writer
+	buffer         bytes.Buffer
+	url            string
+	lock           sync.Mutex
+	lastReset      time.Time
+	updateInterval time.Duration
+}
+
+func sizeScalyrBuffer() int {
+	sum := 0
+
+	for i := 0; i < len(scalyrBuffer); i++ {
+		sum += len(scalyrBuffer[i])
+	}
+
+	return sum
 }
 
 func (w *ScalyrWriter) Write(p []byte) (int, error) {
 	// If we can't upload to Scalyr and flush the buffer, we stop accumulating
 	// so that we don't overrun memory by infinitely buffering.
-	if w.errorCount < 100 {
+	if sizeScalyrBuffer() <= scalyrBufferLimit {
 		w.lock.Lock()
 		w.buffer.Write(p)
+
+		if w.buffer.Len() > 5000000 {
+			buf := make([]byte, w.buffer.Len())
+			copy(buf, w.buffer.Bytes())
+
+			scalyrLock.Lock()
+			scalyrBuffer = append(scalyrBuffer, buf)
+			scalyrLock.Unlock()
+
+			w.buffer.Reset()
+			w.lastReset = time.Now()
+		}
+
 		w.lock.Unlock()
 	}
 	n, err := w.tee.Write(p)
-
-	if w.buffer.Len() > 2000000 {
-		w.UpdateNow()
-	}
 
 	return n, err
 }
@@ -63,7 +89,7 @@ func CreateScalyrWriter(tee io.Writer, url string) *ScalyrWriter {
 		tee = os.Stdout
 	}
 
-	return &ScalyrWriter{tee: tee, url: url}
+	return &ScalyrWriter{tee: tee, url: url, updateInterval: 0, lastReset: time.Now()}
 }
 
 // UpdateNow immediately uploads the collected logs to Scalyr.
@@ -73,55 +99,50 @@ func CreateScalyrWriter(tee io.Writer, url string) *ScalyrWriter {
 // w := CreateScalyrWriter(os.Stdout, "https://www.scalyr.com/api/uploadLogs?host=ExampleService&logfile=AccessLog&token=ExampleToken")
 // defer w.UpdateNow() // Update after leaving the current function.
 func (w *ScalyrWriter) UpdateNow() {
-	var buf []byte
+	scalyrLock.Lock()
+	defer scalyrLock.Unlock()
 
-	// Make a temporary copy of the buffer so we can release it asap.
-	w.lock.Lock()
-
-	if w.buffer.Len() > 0 {
-		buf = make([]byte, w.buffer.Len())
+	if time.Since(w.lastReset) >= w.updateInterval && w.buffer.Len() > 0 && sizeScalyrBuffer() <= scalyrBufferLimit {
+		w.lock.Lock()
+		buf := make([]byte, w.buffer.Len())
 		copy(buf, w.buffer.Bytes())
+
+		scalyrBuffer = append(scalyrBuffer, buf)
+		w.buffer.Reset()
+		w.lastReset = time.Now()
+		w.lock.Unlock()
 	}
 
-	w.lock.Unlock()
+	for len(scalyrBuffer) > 0 {
+		buf := scalyrBuffer[0]
 
-	if len(buf) > 0 {
 		start := time.Now()
 		resp, err := ScalyrClient.Post(w.url, "text/plain", bytes.NewBuffer(buf))
 		if err != nil {
 			w.Println(err.Error())
-			w.errorCount++
 			return
 		}
-		w.Println("Scalyr Post Time:", time.Since(start).String(), "Scalyr Post Url:", w.url)
+		w.Println("Scalyr Post Time:", time.Since(start).String(), "Post Size:", cast.ToString(len(buf)), "Scalyr Post Url:", w.url)
 
 		r, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			w.Println(string(r))
 			w.Println(err.Error())
-			w.errorCount++
 			return
 		}
 
-		var status struct {
-			Status string `json:"status"`
-		}
+		w.Println("Scalyr Response:", string(r))
 
-		json.Unmarshal(r, &status)
-		if err != nil {
-			w.Println(err.Error())
-			w.errorCount++
+		status, err := gojson.ExtractString(r, "status")
+		if status != "success" {
+			w.Println("Scalry Post Status:", status, err.Error())
+			w.Println(string(r))
 			return
 		}
 
-		if status.Status != "success" {
-			w.Println("Scalry Post Status:", status.Status)
-			w.errorCount++
-			return
-		}
+		scalyrBuffer = scalyrBuffer[1:]
 	}
 
-	w.errorCount = 0
 	w.buffer.Reset()
 }
 
@@ -133,7 +154,13 @@ func (w *ScalyrWriter) UpdateNow() {
 // go w.Update(2000) // Update every 2 seconds.
 // Client timeout is set to 2 seconds, it's not recommended that the update interval be less than 2s.
 func (w *ScalyrWriter) Update(interval int) {
-	ticker := time.NewTicker(time.Duration(interval) * time.Millisecond)
+	w.updateInterval = time.Duration(interval) * time.Millisecond
+	// Update no more often than 1 time per second.
+	if w.updateInterval < 1*time.Second {
+		w.updateInterval = 1 * time.Second
+	}
+
+	ticker := time.NewTicker(w.updateInterval)
 
 	for range ticker.C {
 		w.UpdateNow()
