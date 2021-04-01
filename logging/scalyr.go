@@ -38,7 +38,7 @@ type ScalyrWriter struct {
 	updateInterval time.Duration
 }
 
-func sizeScalyrBuffer() int {
+func scalyrBufferLen() int {
 	sum := 0
 
 	for i := 0; i < len(scalyrBuffer); i++ {
@@ -51,7 +51,7 @@ func sizeScalyrBuffer() int {
 func (w *ScalyrWriter) Write(p []byte) (int, error) {
 	// If we can't upload to Scalyr and flush the buffer, we stop accumulating
 	// so that we don't overrun memory by infinitely buffering.
-	if sizeScalyrBuffer() <= scalyrBufferLimit {
+	if scalyrBufferLen() <= scalyrBufferLimit {
 		w.lock.Lock()
 		w.buffer.Write(p)
 
@@ -98,11 +98,15 @@ func CreateScalyrWriter(tee io.Writer, url string) *ScalyrWriter {
 // Example usage:
 // w := CreateScalyrWriter(os.Stdout, "https://www.scalyr.com/api/uploadLogs?host=ExampleService&logfile=AccessLog&token=ExampleToken")
 // defer w.UpdateNow() // Update after leaving the current function.
-func (w *ScalyrWriter) UpdateNow() {
+func (w *ScalyrWriter) UpdateNow(flushBuffer bool) {
 	scalyrLock.Lock()
 	defer scalyrLock.Unlock()
 
-	if time.Since(w.lastReset) >= w.updateInterval && w.buffer.Len() > 0 && sizeScalyrBuffer() <= scalyrBufferLimit {
+	old := time.Since(w.lastReset) >= w.updateInterval
+	empty := w.buffer.Len() == 0
+	full := scalyrBufferLen() > scalyrBufferLimit
+
+	if flushBuffer || (old && !empty && !full) {
 		w.lock.Lock()
 		buf := make([]byte, w.buffer.Len())
 		copy(buf, w.buffer.Bytes())
@@ -142,8 +146,6 @@ func (w *ScalyrWriter) UpdateNow() {
 
 		scalyrBuffer = scalyrBuffer[1:]
 	}
-
-	w.buffer.Reset()
 }
 
 // Update periodically polls the current writer's buffer and uploads the logs to Scalyr.
@@ -163,7 +165,7 @@ func (w *ScalyrWriter) Update(interval int) {
 	ticker := time.NewTicker(w.updateInterval)
 
 	for range ticker.C {
-		w.UpdateNow()
+		w.UpdateNow(false)
 	}
 }
 
