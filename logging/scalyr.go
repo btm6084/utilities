@@ -2,7 +2,6 @@ package logging
 
 import (
 	"bytes"
-	"encoding/json"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -11,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/btm6084/gojson"
 	"github.com/spf13/cast"
 )
 
@@ -131,18 +131,11 @@ func (w *ScalyrWriter) UpdateNow() {
 			return
 		}
 
-		var status struct {
-			Status string `json:"status"`
-		}
+		w.Println("Scalyr Response:", string(r))
 
-		err = json.Unmarshal(r, &status)
-		if err != nil {
-			w.Println(err.Error())
-			return
-		}
-
-		if status.Status != "success" {
-			w.Println("Scalry Post Status:", status.Status)
+		status, err := gojson.ExtractString(r, "status")
+		if status != "success" {
+			w.Println("Scalry Post Status:", status, err.Error())
 			w.Println(string(r))
 			return
 		}
