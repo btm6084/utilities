@@ -20,9 +20,7 @@ var (
 		Timeout: 2 * time.Second,
 	}
 
-	scalyrBuffer      [][]byte
-	scalyrLock        sync.Mutex
-	scalyrBufferLimit = 100000000
+	scalyrBufferLimit = 50000000
 )
 
 // ScalyrWriter will buffer all log writes for logging to scalyr, then
@@ -36,13 +34,16 @@ type ScalyrWriter struct {
 	lock           sync.Mutex
 	lastReset      time.Time
 	updateInterval time.Duration
+
+	scalyrBuffer [][]byte
+	scalyrLock   sync.Mutex
 }
 
-func scalyrBufferLen() int {
+func (w *ScalyrWriter) scalyrBufferLen() int {
 	sum := 0
 
-	for i := 0; i < len(scalyrBuffer); i++ {
-		sum += len(scalyrBuffer[i])
+	for i := 0; i < len(w.scalyrBuffer); i++ {
+		sum += len(w.scalyrBuffer[i])
 	}
 
 	return sum
@@ -51,7 +52,7 @@ func scalyrBufferLen() int {
 func (w *ScalyrWriter) Write(p []byte) (int, error) {
 	// If we can't upload to Scalyr and flush the buffer, we stop accumulating
 	// so that we don't overrun memory by infinitely buffering.
-	if scalyrBufferLen() <= scalyrBufferLimit {
+	if w.scalyrBufferLen() <= scalyrBufferLimit {
 		w.lock.Lock()
 		w.buffer.Write(p)
 
@@ -59,9 +60,9 @@ func (w *ScalyrWriter) Write(p []byte) (int, error) {
 			buf := make([]byte, w.buffer.Len())
 			copy(buf, w.buffer.Bytes())
 
-			scalyrLock.Lock()
-			scalyrBuffer = append(scalyrBuffer, buf)
-			scalyrLock.Unlock()
+			w.scalyrLock.Lock()
+			w.scalyrBuffer = append(w.scalyrBuffer, buf)
+			w.scalyrLock.Unlock()
 
 			w.buffer.Reset()
 			w.lastReset = time.Now()
@@ -99,26 +100,26 @@ func CreateScalyrWriter(tee io.Writer, url string) *ScalyrWriter {
 // w := CreateScalyrWriter(os.Stdout, "https://www.scalyr.com/api/uploadLogs?host=ExampleService&logfile=AccessLog&token=ExampleToken")
 // defer w.UpdateNow() // Update after leaving the current function.
 func (w *ScalyrWriter) UpdateNow(flushBuffer bool) {
-	scalyrLock.Lock()
-	defer scalyrLock.Unlock()
+	w.scalyrLock.Lock()
+	defer w.scalyrLock.Unlock()
 
 	old := time.Since(w.lastReset) >= w.updateInterval
 	empty := w.buffer.Len() == 0
-	full := scalyrBufferLen() > scalyrBufferLimit
+	full := w.scalyrBufferLen() > scalyrBufferLimit
 
 	if flushBuffer || (old && !empty && !full) {
 		w.lock.Lock()
 		buf := make([]byte, w.buffer.Len())
 		copy(buf, w.buffer.Bytes())
 
-		scalyrBuffer = append(scalyrBuffer, buf)
+		w.scalyrBuffer = append(w.scalyrBuffer, buf)
 		w.buffer.Reset()
 		w.lastReset = time.Now()
 		w.lock.Unlock()
 	}
 
-	for len(scalyrBuffer) > 0 {
-		buf := scalyrBuffer[0]
+	for len(w.scalyrBuffer) > 0 {
+		buf := w.scalyrBuffer[0]
 
 		start := time.Now()
 		resp, err := ScalyrClient.Post(w.url, "text/plain", bytes.NewBuffer(buf))
@@ -144,7 +145,7 @@ func (w *ScalyrWriter) UpdateNow(flushBuffer bool) {
 			return
 		}
 
-		scalyrBuffer = scalyrBuffer[1:]
+		w.scalyrBuffer = w.scalyrBuffer[1:]
 	}
 }
 
