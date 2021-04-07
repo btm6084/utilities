@@ -77,7 +77,7 @@ func (c *Client) Ping(r metrics.Recorder) error {
 }
 
 // Get returns the value at `key`
-func (c *Client) Get(r metrics.Recorder, key string) (interface{}, error) {
+func (c *Client) Get(r metrics.Recorder, key string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), c.requestTimeout)
 	defer cancel()
 
@@ -87,6 +87,9 @@ func (c *Client) Get(r metrics.Recorder, key string) (interface{}, error) {
 	defer r.DatabaseSegment("redis", "get key")()
 	rsp := c.RDB.Get(ctx, key)
 	if rsp.Err() != nil {
+		if rsp.Err() == redis.Nil {
+			return "", ErrNotFound
+		}
 		return "", rsp.Err()
 	}
 
