@@ -87,6 +87,9 @@ func (c *Client) Get(r metrics.Recorder, key string) (interface{}, error) {
 	defer r.DatabaseSegment("redis", "get key")()
 	rsp := c.RDB.Get(ctx, key)
 	if rsp.Err() != nil {
+		if rsp.Err() == redis.Nil {
+			return "", ErrNotFound
+		}
 		return "", rsp.Err()
 	}
 
