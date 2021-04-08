@@ -16,7 +16,9 @@ import (
 	"time"
 
 	"github.com/btm6084/gojson"
+	"github.com/btm6084/utilities/health"
 	"github.com/btm6084/utilities/metrics"
+	"github.com/btm6084/utilities/redis"
 )
 
 var (
@@ -240,4 +242,98 @@ func resolvePtr(p reflect.Value) reflect.Value {
 	}
 
 	return p
+}
+
+func HealthCheck(c Cacher) *health.Check {
+	switch c.(type) {
+	case *redis.Client:
+		return checkRedis(c)
+
+	case *MemoryCache:
+		return checkMemoryCache(c)
+	}
+
+	return nil
+}
+
+func checkRedis(c Cacher) *health.Check {
+	start := time.Now()
+	hc := health.Check{
+		Name:        "cache",
+		Status:      health.OK,
+		Description: "cache is Healthy",
+		Data: map[string]interface{}{
+			"cacheType": "redis",
+		},
+	}
+
+	rdb, ok := c.(*redis.Client)
+	if !ok {
+		hc.Status = health.CRITICAL
+		hc.Description = "expected redis type cacher"
+		return &hc
+	}
+
+	errChan := make(chan error, 1)
+	go func() {
+		err := rdb.Ping(&metrics.NoOp{})
+		errChan <- err
+	}()
+
+	var err error
+	select {
+	case err = <-errChan:
+	case <-time.After(1 * time.Second):
+		err = fmt.Errorf("redis cache timed out during ping operation")
+	}
+
+	if err != nil {
+		hc.Status = health.CRITICAL
+		hc.Description = fmt.Sprintf("redis cache storage error: %s", err)
+	}
+
+	hc.Data["pingTime"] = time.Since(start).String()
+	return &hc
+}
+
+func checkMemoryCache(c Cacher) *health.Check {
+	start := time.Now()
+	hc := health.Check{
+		Name:        "cache",
+		Status:      health.OK,
+		Description: "cache is Healthy",
+		Data: map[string]interface{}{
+			"cacheType": "memory_cache",
+		},
+	}
+
+	setVal := time.Now().String()
+	err := c.Set(&metrics.NoOp{}, "healthcheck_test_key", setVal)
+	if err != nil {
+		hc.Status = health.CRITICAL
+		hc.Description = "Memory Cache Set Failed"
+		return &hc
+	}
+
+	getVal, err := c.Get(&metrics.NoOp{}, "healthcheck_test_key")
+	if err != nil {
+		hc.Status = health.CRITICAL
+		hc.Description = "Memory Cache Get Failed"
+		return &hc
+	}
+
+	if g, ok := getVal.(string); ok {
+		if g != setVal {
+			hc.Status = health.CRITICAL
+			hc.Description = "Memory Cache Get Returned Wrong Value"
+			hc.Data = map[string]interface{}{
+				"get": g,
+				"set": setVal,
+			}
+			return &hc
+		}
+	}
+
+	hc.Data["pingTime"] = time.Since(start).String()
+	return &hc
 }
