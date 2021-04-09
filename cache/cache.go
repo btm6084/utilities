@@ -49,6 +49,9 @@ type Cacher interface {
 	Set(metrics.Recorder, string, interface{}) error
 	SetWithDuration(metrics.Recorder, string, interface{}, time.Duration) error
 	Delete(metrics.Recorder, string) error
+
+	// ForeverTTL returns the specific value that represents the no-expire TTL value.
+	ForeverTTL() int
 }
 
 func init() {

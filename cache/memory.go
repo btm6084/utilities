@@ -18,6 +18,11 @@ func NewMemoryCache(defaultTTL time.Duration) Cacher {
 	return &MemoryCache{defaultTTL: defaultTTL, cache: cache.New(defaultTTL, 2*defaultTTL)}
 }
 
+// ForeverTTL returns the go-cache value that represents the no-expire TTL value.
+func (c *MemoryCache) ForeverTTL() int {
+	return -1
+}
+
 // Get a value from cache.
 func (c *MemoryCache) Get(m metrics.Recorder, key string) (interface{}, error) {
 	if c.cache == nil {

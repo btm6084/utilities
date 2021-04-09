@@ -57,6 +57,11 @@ func onConnect(clientName string) func(context.Context, *redis.Conn) error {
 	}
 }
 
+// ForeverTTL returns the redis value that represents the no-expire TTL value.
+func (c *Client) ForeverTTL() int {
+	return 0
+}
+
 // Ping tests the connection to Redis.
 func (c *Client) Ping(r metrics.Recorder) error {
 	ctx, cancel := context.WithTimeout(context.Background(), c.requestTimeout)
