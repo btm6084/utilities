@@ -95,7 +95,6 @@ func Get(r metrics.Recorder, key string, container interface{}) error {
 
 	switch container.(type) {
 	case []byte, *[]byte:
-
 		if !strings.HasSuffix(b, deB64Hint) {
 			err = gojson.Unmarshal([]byte(b), &container)
 			if err != nil {
@@ -118,6 +117,10 @@ func Get(r metrics.Recorder, key string, container interface{}) error {
 		b = strings.TrimSuffix(b, deB64Hint)
 
 		sq := stripQuotes(b)
+		if gojson.IsJSONNull(sq) {
+			sq = []byte{}
+		}
+
 		d := make([]byte, base64.StdEncoding.DecodedLen(len(sq)))
 		n, err := base64.StdEncoding.Decode(d, sq)
 
