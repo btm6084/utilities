@@ -61,7 +61,7 @@ func Middleware(cacheDuration int, excludedPaths []string) func(http.Handler) ht
 			key := r.Method + r.RequestURI + r.Header.Get("range")
 			m := metrics.GetRecorder(r.Context())
 
-			if handlerTryCache(w, r, m, key) {
+			if handlerTryCache(w, r, m, key, d) {
 				return
 			}
 
@@ -84,7 +84,7 @@ func HandlerWrapper(cacheDuration int, next http.Handler) http.HandlerFunc {
 		m := metrics.GetRecorder(r.Context())
 		key := r.Method + r.RequestURI + r.Header.Get("range")
 
-		if handlerTryCache(w, r, m, key) {
+		if handlerTryCache(w, r, m, key, d) {
 			return
 		}
 
@@ -92,7 +92,7 @@ func HandlerWrapper(cacheDuration int, next http.Handler) http.HandlerFunc {
 	})
 }
 
-func handlerTryCache(w http.ResponseWriter, r *http.Request, m metrics.Recorder, key string) bool {
+func handlerTryCache(w http.ResponseWriter, r *http.Request, m metrics.Recorder, key string, d time.Duration) bool {
 
 	var b []byte
 	if err := Get(m, key, &b); err == nil {
@@ -123,7 +123,7 @@ func handlerTryCache(w http.ResponseWriter, r *http.Request, m metrics.Recorder,
 		}
 
 		w.Header().Set("X-Cache-Hit", "true")
-		w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d, public", int(dur/time.Second)))
+		w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d, public", int(d/time.Second)))
 		w.Write(b)
 		return true
 	}
@@ -134,7 +134,7 @@ func handlerTryCache(w http.ResponseWriter, r *http.Request, m metrics.Recorder,
 func handleCacheableRequest(next http.Handler, w http.ResponseWriter, r *http.Request, m metrics.Recorder, key string, d time.Duration) {
 	writer := ResponseWriterTee{w: w}
 	w.Header().Set("X-Cache-Hit", "false")
-	w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d, public", int(dur/time.Second)))
+	w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d, public", int(d/time.Second)))
 
 	req := logging.RequestWithCacheStatus(r, false)
 	if r != nil && req != nil {
