@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/btm6084/utilities/logging"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -91,7 +92,7 @@ func identifyPanic() (string, int, error) {
 func PanicHandler() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			defer PanicRecovery(nil, true)()
+			defer PanicRecovery(nil, true, logging.TransactionFromContext(req.Context()))()
 
 			next.ServeHTTP(w, req)
 		})
