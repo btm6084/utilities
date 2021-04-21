@@ -263,7 +263,27 @@ func HealthCheck(c Cacher) *health.Check {
 		return checkMemoryCache(c)
 	}
 
-	return nil
+	return &health.Check{
+		Name:   "no_cache",
+		Status: health.CRITICAL,
+		Data:   map[string]interface{}{},
+	}
+}
+
+func DefaultHealthCheck() *health.Check {
+	switch c.(type) {
+	case *redis.Client:
+		return checkRedis(c)
+
+	case *MemoryCache:
+		return checkMemoryCache(c)
+	}
+
+	return &health.Check{
+		Name:   "no_cache",
+		Status: health.CRITICAL,
+		Data:   map[string]interface{}{},
+	}
 }
 
 func checkRedis(c Cacher) *health.Check {
