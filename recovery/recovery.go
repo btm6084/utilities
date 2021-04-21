@@ -15,7 +15,7 @@ import (
 // to populate will be passed in via the err parameter.
 //
 // usage: defer PanicRecovery(&err, true)()
-func PanicRecovery(err *error, logErrors bool) func() {
+func PanicRecovery(err *error, logErrors bool, txnID string) func() {
 	return func() {
 
 		// If err is nil, we don't want to cause a panic. However, we can't actually set it
@@ -32,14 +32,14 @@ func PanicRecovery(err *error, logErrors bool) func() {
 			switch r := r.(type) {
 			case error:
 				if logErrors {
-					log.WithFields(log.Fields{"panic": "error", "file": s, "line_num": i}).Error(r)
+					log.WithFields(log.Fields{"panic": "error", "file": s, "line_num": i, "txnID": txnID}).Error(r)
 				}
 
 				// Create a new error and assign it to our pointer.
 				*err = r.(error)
 			case string:
 				if logErrors {
-					log.WithFields(log.Fields{"panic": "string", "file": s, "line_num": i}).Error(r)
+					log.WithFields(log.Fields{"panic": "string", "file": s, "line_num": i, "txnID": txnID}).Error(r)
 				}
 
 				// Create a new error and assign it to our pointer.
@@ -48,7 +48,7 @@ func PanicRecovery(err *error, logErrors bool) func() {
 				msg := fmt.Sprintf("%+v", r)
 
 				if logErrors {
-					log.WithFields(log.Fields{"panic": "default", "file": s, "line_num": i}).Error(msg)
+					log.WithFields(log.Fields{"panic": "default", "file": s, "line_num": i, "txnID": txnID}).Error(msg)
 				}
 
 				// Create a new error and assign it to our pointer.
