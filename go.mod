@@ -6,6 +6,8 @@ require (
 	github.com/btm6084/godb v1.0.11
 	github.com/btm6084/gojson v1.0.10
 	github.com/denisenkom/go-mssqldb v0.9.0 // indirect
+	github.com/elastic/go-elasticsearch v0.0.0
+	github.com/elastic/go-elasticsearch/v6 v6.8.10
 	github.com/go-redis/redis/v8 v8.4.10
 	github.com/google/uuid v1.2.0
 	github.com/lib/pq v1.10.0 // indirect
