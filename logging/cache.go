@@ -24,6 +24,11 @@ func CacheStatusFromContext(ctx context.Context) bool {
 	return cs
 }
 
+// CacheStatusFromHeaders returns true if the X-Cache-Hit header was set with the value "true".
+func CacheStatusFromHeaders(h http.Header) bool {
+	return h.Get("X-Cache-Hit") == "true"
+}
+
 // RequestWithCacheStatus attaches a cache status to the request.
 func RequestWithCacheStatus(r *http.Request, status bool) *http.Request {
 	c := r.Context()

@@ -117,11 +117,6 @@ func handlerTryCache(w http.ResponseWriter, r *http.Request, m metrics.Recorder,
 			}
 		}
 
-		req := logging.RequestWithCacheStatus(r, true)
-		if r != nil && req != nil {
-			*r = *req
-		}
-
 		w.Header().Set("X-Cache-Hit", "true")
 		w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d, public", int(d/time.Second)))
 		w.Write(b)

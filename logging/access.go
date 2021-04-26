@@ -78,7 +78,7 @@ func (l logWriter) logRequest(req *http.Request, start time.Time, dur time.Durat
 		"cookies":               escape(first(req.Header["Cookie"])),
 		"date":                  start.Format("2006-01-02"),
 		"duration":              dur / time.Millisecond,
-		"fromCache":             CacheStatusFromContext(req.Context()),
+		"fromCache":             CacheStatusFromHeaders(rw.w.Header()),
 		"httpStatusCode":        rw.status,
 		"method":                escape(req.Method),
 		"path":                  escape(req.URL.Path),
