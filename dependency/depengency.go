@@ -8,4 +8,7 @@ const (
 
 	// esContextKey is the key under which we store the elasticsearch interface in context.
 	esContextKey key = 1
+
+	// rdbContextKey is the key under which we store the redis interface in context.
+	rdbContextKey key = 2
 )
