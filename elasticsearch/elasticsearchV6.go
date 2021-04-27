@@ -4,8 +4,8 @@ import (
 	elasticsearch "github.com/elastic/go-elasticsearch/v6"
 )
 
-// New configures and returns an Elasticsearch client from parameters.
-func New(host, index string) (*elasticsearch.Client, error) {
+// NewV6 configures and returns an Elasticsearch client from parameters.
+func NewV6(host, index string) (*elasticsearch.Client, error) {
 	// Connect to elastic search
 	cfg := elasticsearch.Config{
 		Addresses: []string{
