@@ -1,10 +1,7 @@
 name: Unit Tests
 
 # On push, run the unittests.
-on:
-  push:
-    branches:
-      - '*'
+on: [pull_request]
 
 jobs:
   build:
