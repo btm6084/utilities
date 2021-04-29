@@ -72,6 +72,13 @@ func (l logWriter) logRequest(req *http.Request, start time.Time, dur time.Durat
 		}
 	}
 
+	// Parse the query string to JSON
+	q := `"` + req.URL.RawQuery + `"`
+	b, err := json.Marshal(req.URL.Query())
+	if err == nil {
+		q = string(b)
+	}
+
 	out := map[string]interface{}{
 		"clientIP":              escape(remoteip.Get(req)),
 		"contentType":           rw.w.Header().Get("Content-Type"),
@@ -82,7 +89,7 @@ func (l logWriter) logRequest(req *http.Request, start time.Time, dur time.Durat
 		"httpStatusCode":        rw.status,
 		"method":                escape(req.Method),
 		"path":                  escape(req.URL.Path),
-		"queryString":           escape(req.URL.RawQuery),
+		"queryString":           json.RawMessage(q),
 		"referrer":              escape(first(req.Header["Referer"])),
 		"requestContentLength":  req.ContentLength,
 		"responseContentLength": rw.length,
