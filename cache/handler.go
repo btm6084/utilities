@@ -22,6 +22,12 @@ var (
 	}
 )
 
+type CacheEvent struct {
+	Content    string      `json:"content"`
+	StatusCode int         `json:"statusCode"`
+	Headers    http.Header `json:"headers"`
+}
+
 // ResponseWriterTee captures input to an http.ResponseWriter
 type ResponseWriterTee struct {
 	Buffer     bytes.Buffer
@@ -94,32 +100,23 @@ func HandlerWrapper(cacheDuration int, next http.Handler) http.HandlerFunc {
 
 func handlerTryCache(w http.ResponseWriter, r *http.Request, m metrics.Recorder, key string, d time.Duration) bool {
 
-	var b []byte
-	if err := Get(m, key, &b); err == nil {
-		var s int
-		if err := Get(m, key+"StatusCode", &s); err == nil {
-			w.WriteHeader(s)
-		} else {
-			w.WriteHeader(200)
-		}
-
+	var ce CacheEvent
+	if err := Get(m, key, &ce); err == nil {
 		// Retain any headers.
-		var h http.Header
-		if err := Get(m, key+"headers", &h); err == nil {
-			for k, v := range h {
-				if forbiddenHeader(k) {
-					continue
-				}
+		for k, v := range ce.Headers {
+			if forbiddenHeader(k) {
+				continue
+			}
 
-				for i := 0; i < len(v); i++ {
-					w.Header().Set(k, v[i])
-				}
+			for i := 0; i < len(v); i++ {
+				w.Header().Set(k, v[i])
 			}
 		}
 
 		w.Header().Set("X-Cache-Hit", "true")
 		w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d, public", int(d/time.Second)))
-		w.Write(b)
+		w.WriteHeader(ce.StatusCode)
+		w.Write([]byte(ce.Content))
 		return true
 	}
 
@@ -143,9 +140,13 @@ func handleCacheableRequest(next http.Handler, w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	SetWithDuration(m, key, writer.Buffer.Bytes(), d)
-	SetWithDuration(m, key+"headers", w.Header(), d)
-	SetWithDuration(m, key+"StatusCode", writer.StatusCode, d)
+	ce := CacheEvent{
+		Content:    writer.Buffer.String(),
+		Headers:    w.Header(),
+		StatusCode: writer.StatusCode,
+	}
+
+	SetWithDuration(m, key, ce, d)
 }
 
 func excludedFromCache(r *http.Request, excludePaths []string) bool {
