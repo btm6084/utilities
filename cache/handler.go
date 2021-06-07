@@ -82,7 +82,7 @@ func HandlerWrapper(cacheDuration int, next http.Handler) http.HandlerFunc {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		if !Enabled || r.Method != "GET" {
+		if !Enabled || r.Method != "GET" || cast.ToBool(r.URL.Query().Get("noCache")) {
 			next.ServeHTTP(w, r)
 			return
 		}
