@@ -8,16 +8,15 @@ import (
 
 // UniqueInt takes a slice of int and returns a slice with only unique elements.
 func UniqueInt(in []int) []int {
-	uMap := make(map[int]bool)
+	seen := make(map[int]bool)
+	var out []int
 	for _, v := range in {
-		uMap[v] = true
-	}
+		if _, isset := seen[v]; isset {
+			continue
+		}
 
-	out := make([]int, len(uMap))
-	i := 0
-	for k := range uMap {
-		out[i] = k
-		i++
+		seen[v] = true
+		out = append(out, v)
 	}
 
 	return out
