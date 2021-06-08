@@ -12,8 +12,28 @@ func MinMaxFloat(val, min, max float64) float64 {
 	return val
 }
 
+func DefaultMaxFloat(val, def, max float64) float64 {
+	if val <= 0 {
+		return def
+	}
+
+	if val > max {
+		return max
+	}
+
+	return val
+}
+
 func MaxFloat(a, b float64) float64 {
 	if a > b {
+		return a
+	}
+	return b
+}
+
+// MinFloat returns the larger of a or b
+func MinFloat(a, b float64) float64 {
+	if a < b {
 		return a
 	}
 	return b

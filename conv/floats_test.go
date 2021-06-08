@@ -71,3 +71,49 @@ func TestRoundPercent(t *testing.T) {
 		})
 	}
 }
+
+func TestMinFloats(t *testing.T) {
+	testCases := []struct {
+		A        float64
+		B        float64
+		Expected float64
+	}{
+		{0, 100, 0},
+		{101, 100, 100},
+		{100, 0, 0},
+		{-100, 100, -100},
+		{-1, -2, -2},
+	}
+
+	for k, tc := range testCases {
+		t.Run(cast.ToString(k+1), func(t *testing.T) {
+			require.Equal(t, tc.Expected, MinFloat(tc.A, tc.B))
+		})
+	}
+}
+
+func TestDefaultMaxFloats(t *testing.T) {
+	testCases := []struct {
+		Default  float64
+		Max      float64
+		Val      float64
+		Expected float64
+	}{
+		{10, 100, 50, 50},
+		{10, 75, 50, 50},
+		{25, 75, 50, 50},
+		{25, 75, 0, 25},
+		{25, 75, 76, 75},
+		{55, 75, 50, 50},
+		{55, 75, 100, 75},
+		{-1, -2, 100, -2},
+		{-1, -2, -100, -1},
+		{-2, -1, -100, -2},
+	}
+
+	for k, tc := range testCases {
+		t.Run(cast.ToString(k+1), func(t *testing.T) {
+			require.Equal(t, tc.Expected, DefaultMaxFloat(tc.Val, tc.Default, tc.Max))
+		})
+	}
+}
