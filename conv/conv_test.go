@@ -4,67 +4,67 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFToC(t *testing.T) {
 	i := -33.5
-	assert.Equal(t, -36.39, FToC(i))
+	require.Equal(t, -36.39, FToC(i))
 	i = -12.0
-	assert.Equal(t, -24.44, FToC(i))
+	require.Equal(t, -24.44, FToC(i))
 	i = 0.0
-	assert.Equal(t, -17.78, FToC(i))
+	require.Equal(t, -17.78, FToC(i))
 	i = 32.0
-	assert.Equal(t, 0.0, FToC(i))
+	require.Equal(t, 0.0, FToC(i))
 	i = 74.0
-	assert.Equal(t, 23.33, FToC(i))
+	require.Equal(t, 23.33, FToC(i))
 	i = 212.0
-	assert.Equal(t, 100.0, FToC(i))
+	require.Equal(t, 100.0, FToC(i))
 }
 
 func TestMilesToKm(t *testing.T) {
 	i := 0.0
-	assert.Equal(t, 0.0, MilesToKm(i))
+	require.Equal(t, 0.0, MilesToKm(i))
 	i = 10.5
-	assert.Equal(t, 16.9, MilesToKm(i))
+	require.Equal(t, 16.9, MilesToKm(i))
 	i = 42
-	assert.Equal(t, 67.59, MilesToKm(i))
+	require.Equal(t, 67.59, MilesToKm(i))
 	i = 62.14
-	assert.Equal(t, 100.0, MilesToKm(i))
+	require.Equal(t, 100.0, MilesToKm(i))
 }
 
 func TestFeetToMeters(t *testing.T) {
 	i := 0.0
-	assert.Equal(t, 0.0, FeetToMeters(i))
+	require.Equal(t, 0.0, FeetToMeters(i))
 	i = 3.0
-	assert.Equal(t, 0.91, FeetToMeters(i))
+	require.Equal(t, 0.91, FeetToMeters(i))
 	i = 6.0
-	assert.Equal(t, 1.83, FeetToMeters(i))
+	require.Equal(t, 1.83, FeetToMeters(i))
 	i = 17.2
-	assert.Equal(t, 5.24, FeetToMeters(i))
+	require.Equal(t, 5.24, FeetToMeters(i))
 }
 
 func TestRound(t *testing.T) {
 	i := 10.5
-	assert.Equal(t, 11, Round(i))
+	require.Equal(t, 11, Round(i))
 	i = 0.0
-	assert.Equal(t, 0, Round(i))
+	require.Equal(t, 0, Round(i))
 	i = -1.1
-	assert.Equal(t, -1, Round(i))
+	require.Equal(t, -1, Round(i))
 	i = -1.9
-	assert.Equal(t, -2, Round(i))
+	require.Equal(t, -2, Round(i))
 }
 
 func TestToFixed(t *testing.T) {
 	i := 3.1415926
-	assert.Equal(t, 3.14, ToFixed(i, 2))
-	assert.Equal(t, 3.1415926, ToFixed(i, 8))
-	assert.Equal(t, 3.0, ToFixed(i, 0))
+	require.Equal(t, 3.14, ToFixed(i, 2))
+	require.Equal(t, 3.1415926, ToFixed(i, 8))
+	require.Equal(t, 3.0, ToFixed(i, 0))
 
 	a := 0.1
 	b := 0.2
-	assert.NotEqual(t, 0.3, a+b)
-	assert.Equal(t, 0.3, ToFixed(a+b, 1))
+	require.NotEqual(t, 0.3, a+b)
+	require.Equal(t, 0.3, ToFixed(a+b, 1))
 }
 
 func TestFormatDuration(t *testing.T) {
@@ -102,7 +102,7 @@ func TestFormatDuration(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Label, func(t *testing.T) {
-			assert.Equal(t, tc.Expected, RelativeTime(time.Since(tc.Input)))
+			require.Equal(t, tc.Expected, RelativeTime(time.Since(tc.Input)))
 		})
 	}
 }

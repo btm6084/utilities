@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/spf13/cast"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGet(t *testing.T) {
@@ -29,7 +29,7 @@ func TestGet(t *testing.T) {
 			r := &http.Request{Header: http.Header{}}
 
 			r.Header.Set("X-Client-IP", tc.Raw)
-			assert.Equal(t, tc.Expected, Get(r))
+			require.Equal(t, tc.Expected, Get(r))
 		})
 	}
 
@@ -38,7 +38,7 @@ func TestGet(t *testing.T) {
 			r := &http.Request{Header: http.Header{}}
 
 			r.Header.Set("X-Forwarded-For", tc.Raw)
-			assert.Equal(t, tc.Expected, Get(r))
+			require.Equal(t, tc.Expected, Get(r))
 		})
 	}
 
@@ -47,14 +47,14 @@ func TestGet(t *testing.T) {
 			r := &http.Request{Header: http.Header{}}
 
 			r.Header.Set("X-Real-IP", tc.Raw)
-			assert.Equal(t, tc.Expected, Get(r))
+			require.Equal(t, tc.Expected, Get(r))
 		})
 	}
 
 	for n, tc := range testCases {
 		t.Run("RemoteAddr-"+cast.ToString(n), func(t *testing.T) {
 			r := &http.Request{RemoteAddr: tc.Raw}
-			assert.Equal(t, tc.Expected, Get(r))
+			require.Equal(t, tc.Expected, Get(r))
 		})
 	}
 }

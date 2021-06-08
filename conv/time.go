@@ -4,7 +4,17 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/spf13/cast"
 )
+
+func DaysSince(t time.Time) int {
+	return cast.ToInt(time.Since(t).Hours() / 24)
+}
+
+func DiffInDays(a, b time.Time) int {
+	return int(a.Sub(b).Hours() / 24)
+}
 
 // ParseTime attempts to extract a valid time.Time from an input string. We prefer RFC3999.
 // Fallback should match MSSQL's CURRENT_TIMESTAMP.

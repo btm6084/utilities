@@ -4,43 +4,43 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestIsBinaryFile(t *testing.T) {
-	assert.True(t, IsBinaryFile("./testfiles/test.png"), "test.png")
-	assert.True(t, IsBinaryFile("./testfiles/test"), "test")
-	assert.True(t, IsBinaryFile("./testfiles/test.blnk"), "test.blnk")
+	require.True(t, IsBinaryFile("./testfiles/test.png"), "test.png")
+	require.True(t, IsBinaryFile("./testfiles/test"), "test")
+	require.True(t, IsBinaryFile("./testfiles/test.blnk"), "test.blnk")
 
-	assert.False(t, IsBinaryFile("./testfiles/test.dlnk"), "test.dlnk")
-	assert.False(t, IsBinaryFile("./testfiles/test.lnk"), "test.lnk")
-	assert.False(t, IsBinaryFile("./testfiles/test.md"), "test.md")
-	assert.False(t, IsBinaryFile("./testfiles/test.php"), "test.php")
-	assert.False(t, IsBinaryFile("./testfiles/test.txt"), "test.txt")
+	require.False(t, IsBinaryFile("./testfiles/test.dlnk"), "test.dlnk")
+	require.False(t, IsBinaryFile("./testfiles/test.lnk"), "test.lnk")
+	require.False(t, IsBinaryFile("./testfiles/test.md"), "test.md")
+	require.False(t, IsBinaryFile("./testfiles/test.php"), "test.php")
+	require.False(t, IsBinaryFile("./testfiles/test.txt"), "test.txt")
 }
 
 func TestIsSymlink(t *testing.T) {
-	assert.True(t, IsSymlink("./testfiles/test.blnk"), "test.blnk")
-	assert.True(t, IsSymlink("./testfiles/test.lnk"), "test.lnk")
+	require.True(t, IsSymlink("./testfiles/test.blnk"), "test.blnk")
+	require.True(t, IsSymlink("./testfiles/test.lnk"), "test.lnk")
 
-	assert.False(t, IsSymlink("./testfiles/test.md"), "test.md")
-	assert.False(t, IsSymlink("./testfiles/test.php"), "test.php")
-	assert.False(t, IsSymlink("./testfiles/test.png"), "test.png")
-	assert.False(t, IsSymlink("./testfiles/test.txt"), "test.txt")
-	assert.False(t, IsSymlink("./testfiles/test"), "test")
+	require.False(t, IsSymlink("./testfiles/test.md"), "test.md")
+	require.False(t, IsSymlink("./testfiles/test.php"), "test.php")
+	require.False(t, IsSymlink("./testfiles/test.png"), "test.png")
+	require.False(t, IsSymlink("./testfiles/test.txt"), "test.txt")
+	require.False(t, IsSymlink("./testfiles/test"), "test")
 }
 
 func TestIsDir(t *testing.T) {
-	assert.True(t, IsDir("./testfiles/"), "testfiles")
-	assert.True(t, IsDir("./testfiles/test.dlnk"), "test.dlnk")
+	require.True(t, IsDir("./testfiles/"), "testfiles")
+	require.True(t, IsDir("./testfiles/test.dlnk"), "test.dlnk")
 
-	assert.False(t, IsDir("./testfiles/test.blnk"), "test.blnk")
-	assert.False(t, IsDir("./testfiles/test.lnk"), "test.lnk")
-	assert.False(t, IsDir("./testfiles/test"), "test")
-	assert.False(t, IsDir("./testfiles/test.png"), "test.png")
-	assert.False(t, IsDir("./testfiles/test.md"), "test.md")
-	assert.False(t, IsDir("./testfiles/test.php"), "test.php")
-	assert.False(t, IsDir("./testfiles/test.txt"), "test.txt")
+	require.False(t, IsDir("./testfiles/test.blnk"), "test.blnk")
+	require.False(t, IsDir("./testfiles/test.lnk"), "test.lnk")
+	require.False(t, IsDir("./testfiles/test"), "test")
+	require.False(t, IsDir("./testfiles/test.png"), "test.png")
+	require.False(t, IsDir("./testfiles/test.md"), "test.md")
+	require.False(t, IsDir("./testfiles/test.php"), "test.php")
+	require.False(t, IsDir("./testfiles/test.txt"), "test.txt")
 }
 
 func TestDirToArray(t *testing.T) {
@@ -60,7 +60,7 @@ func TestDirToArray(t *testing.T) {
 	sort.Strings(files)
 	sort.Strings(expected)
 
-	assert.Equal(t, expected, files)
+	require.Equal(t, expected, files)
 }
 
 func TestDefaultFileFilter(t *testing.T) {
@@ -76,7 +76,7 @@ func TestDefaultFileFilter(t *testing.T) {
 	sort.Strings(files)
 	sort.Strings(expected)
 
-	assert.Equal(t, expected, files)
+	require.Equal(t, expected, files)
 }
 
 func TestFilterOutBinaries(t *testing.T) {
@@ -94,7 +94,7 @@ func TestFilterOutBinaries(t *testing.T) {
 	sort.Strings(files)
 	sort.Strings(expected)
 
-	assert.Equal(t, expected, files)
+	require.Equal(t, expected, files)
 }
 
 func TestDirToArrayNoFollow(t *testing.T) {
@@ -111,7 +111,7 @@ func TestDirToArrayNoFollow(t *testing.T) {
 	sort.Strings(files)
 	sort.Strings(expected)
 
-	assert.Equal(t, expected, files)
+	require.Equal(t, expected, files)
 }
 
 func TestFilterOutSymlinks(t *testing.T) {
@@ -130,7 +130,7 @@ func TestFilterOutSymlinks(t *testing.T) {
 	sort.Strings(files)
 	sort.Strings(expected)
 
-	assert.Equal(t, expected, files)
+	require.Equal(t, expected, files)
 }
 
 func TestFilterExtWhitelist(t *testing.T) {
@@ -144,7 +144,7 @@ func TestFilterExtWhitelist(t *testing.T) {
 	sort.Strings(files)
 	sort.Strings(expected)
 
-	assert.Equal(t, expected, files)
+	require.Equal(t, expected, files)
 }
 
 func TestFilterExtBlacklist(t *testing.T) {
@@ -163,5 +163,5 @@ func TestFilterExtBlacklist(t *testing.T) {
 	sort.Strings(files)
 	sort.Strings(expected)
 
-	assert.Equal(t, expected, files)
+	require.Equal(t, expected, files)
 }

@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/spf13/cast"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -26,14 +26,14 @@ func disableTestStrings(t *testing.T) {
 
 	t.Run("Large Input", func(t *testing.T) {
 		actual := Strings(stringsInput[:8])
-		assert.Equal(t, factorial(8), len(actual))
+		require.Equal(t, factorial(8), len(actual))
 
 		s := make([]string, len(actual))
 		for i, v := range actual {
 			s[i] = strings.Join(v, " ")
 		}
 
-		assert.Equal(t, len(actual), len(UniqueString(s, false)))
+		require.Equal(t, len(actual), len(UniqueString(s, false)))
 
 		seen := make(map[string]int)
 		for i := 0; i < len(actual); i++ {
@@ -59,14 +59,14 @@ func disableTestStrings(t *testing.T) {
 		t.Run(cast.ToString(i)+"s", func(t *testing.T) {
 
 			actual := Strings(stringsInput[:i])
-			assert.Equal(t, factorial(i), len(actual))
+			require.Equal(t, factorial(i), len(actual))
 
 			s := make([]string, len(actual))
 			for i, v := range actual {
 				s[i] = strings.Join(v, " ")
 			}
 
-			assert.Equal(t, len(actual), len(UniqueString(s, false)))
+			require.Equal(t, len(actual), len(UniqueString(s, false)))
 
 			seen := make(map[string]int)
 			for i := 0; i < len(actual); i++ {
@@ -90,8 +90,8 @@ func disableTestStrings(t *testing.T) {
 		}
 
 		actual := Strings(input)
-		assert.ElementsMatch(t, expected, actual)
-		assert.Equal(t, 2*1, len(actual))
+		require.ElementsMatch(t, expected, actual)
+		require.Equal(t, 2*1, len(actual))
 	})
 
 	t.Run("3s", func(t *testing.T) {
@@ -108,8 +108,8 @@ func disableTestStrings(t *testing.T) {
 		}
 
 		actual := Strings(input)
-		assert.ElementsMatch(t, expected, actual)
-		assert.Equal(t, 3*2*1, len(actual))
+		require.ElementsMatch(t, expected, actual)
+		require.Equal(t, 3*2*1, len(actual))
 	})
 
 	t.Run("4s", func(t *testing.T) {
@@ -145,8 +145,8 @@ func disableTestStrings(t *testing.T) {
 		}
 
 		actual := Strings(input)
-		assert.ElementsMatch(t, expected, actual)
-		assert.Equal(t, 4*3*2*1, len(actual))
+		require.ElementsMatch(t, expected, actual)
+		require.Equal(t, 4*3*2*1, len(actual))
 	})
 
 	t.Run("5s", func(t *testing.T) {
@@ -279,8 +279,8 @@ func disableTestStrings(t *testing.T) {
 		}
 
 		actual := Strings(input)
-		assert.ElementsMatch(t, expected, actual)
-		assert.Equal(t, 5*4*3*2*1, len(actual))
+		require.ElementsMatch(t, expected, actual)
+		require.Equal(t, 5*4*3*2*1, len(actual))
 	})
 
 	t.Run("6s", func(t *testing.T) {
@@ -1014,22 +1014,22 @@ func disableTestStrings(t *testing.T) {
 		}
 
 		actual := Strings(input)
-		assert.ElementsMatch(t, expected, actual)
-		assert.Equal(t, 6*5*4*3*2*1, len(actual))
+		require.ElementsMatch(t, expected, actual)
+		require.Equal(t, 6*5*4*3*2*1, len(actual))
 	})
 }
 
 func disableTestStringsRecursive(t *testing.T) {
 	t.Run("Large Input", func(t *testing.T) {
 		actual := StringsRecursive(stringsInput[:8])
-		assert.Equal(t, factorial(8), len(actual))
+		require.Equal(t, factorial(8), len(actual))
 
 		s := make([]string, len(actual))
 		for i, v := range actual {
 			s[i] = strings.Join(v, " ")
 		}
 
-		assert.Equal(t, len(actual), len(UniqueString(s, false)))
+		require.Equal(t, len(actual), len(UniqueString(s, false)))
 
 		seen := make(map[string]int)
 		for i := 0; i < len(actual); i++ {
@@ -1055,14 +1055,14 @@ func disableTestStringsRecursive(t *testing.T) {
 		t.Run(cast.ToString(i)+"s", func(t *testing.T) {
 
 			actual := StringsRecursive(stringsInput[:i])
-			assert.Equal(t, factorial(i), len(actual))
+			require.Equal(t, factorial(i), len(actual))
 
 			s := make([]string, len(actual))
 			for i, v := range actual {
 				s[i] = strings.Join(v, " ")
 			}
 
-			assert.Equal(t, len(actual), len(UniqueString(s, false)))
+			require.Equal(t, len(actual), len(UniqueString(s, false)))
 
 			seen := make(map[string]int)
 			for i := 0; i < len(actual); i++ {
@@ -1086,8 +1086,8 @@ func disableTestStringsRecursive(t *testing.T) {
 		}
 
 		actual := StringsRecursive(input)
-		assert.ElementsMatch(t, expected, actual)
-		assert.Equal(t, 2*1, len(actual))
+		require.ElementsMatch(t, expected, actual)
+		require.Equal(t, 2*1, len(actual))
 	})
 
 	t.Run("3s", func(t *testing.T) {
@@ -1104,8 +1104,8 @@ func disableTestStringsRecursive(t *testing.T) {
 		}
 
 		actual := StringsRecursive(input)
-		assert.ElementsMatch(t, expected, actual)
-		assert.Equal(t, 3*2*1, len(actual))
+		require.ElementsMatch(t, expected, actual)
+		require.Equal(t, 3*2*1, len(actual))
 	})
 
 	t.Run("4s", func(t *testing.T) {
@@ -1141,8 +1141,8 @@ func disableTestStringsRecursive(t *testing.T) {
 		}
 
 		actual := StringsRecursive(input)
-		assert.ElementsMatch(t, expected, actual)
-		assert.Equal(t, 4*3*2*1, len(actual))
+		require.ElementsMatch(t, expected, actual)
+		require.Equal(t, 4*3*2*1, len(actual))
 	})
 
 	t.Run("5s", func(t *testing.T) {
@@ -1275,8 +1275,8 @@ func disableTestStringsRecursive(t *testing.T) {
 		}
 
 		actual := StringsRecursive(input)
-		assert.ElementsMatch(t, expected, actual)
-		assert.Equal(t, 5*4*3*2*1, len(actual))
+		require.ElementsMatch(t, expected, actual)
+		require.Equal(t, 5*4*3*2*1, len(actual))
 	})
 
 	t.Run("6s", func(t *testing.T) {
@@ -2010,15 +2010,15 @@ func disableTestStringsRecursive(t *testing.T) {
 		}
 
 		actual := StringsRecursive(input)
-		assert.ElementsMatch(t, expected, actual)
-		assert.Equal(t, 6*5*4*3*2*1, len(actual))
+		require.ElementsMatch(t, expected, actual)
+		require.Equal(t, 6*5*4*3*2*1, len(actual))
 
 		s := make([]string, len(actual))
 		for i, v := range actual {
 			s[i] = strings.Join(v, " ")
 		}
 
-		assert.Equal(t, len(actual), len(UniqueString(s, false)))
+		require.Equal(t, len(actual), len(UniqueString(s, false)))
 	})
 }
 

@@ -3,7 +3,7 @@ package permutation
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func disableTestInts(t *testing.T) {
@@ -15,8 +15,8 @@ func disableTestInts(t *testing.T) {
 		}
 
 		actual := Ints(input)
-		assert.ElementsMatch(t, expected, actual)
-		assert.Equal(t, 2*1, len(actual))
+		require.ElementsMatch(t, expected, actual)
+		require.Equal(t, 2*1, len(actual))
 	})
 
 	t.Run("3s", func(t *testing.T) {
@@ -33,8 +33,8 @@ func disableTestInts(t *testing.T) {
 		}
 
 		actual := Ints(input)
-		assert.ElementsMatch(t, expected, actual)
-		assert.Equal(t, 3*2*1, len(actual))
+		require.ElementsMatch(t, expected, actual)
+		require.Equal(t, 3*2*1, len(actual))
 	})
 
 	t.Run("4s", func(t *testing.T) {
@@ -70,8 +70,8 @@ func disableTestInts(t *testing.T) {
 		}
 
 		actual := Ints(input)
-		assert.ElementsMatch(t, expected, actual)
-		assert.Equal(t, 4*3*2*1, len(actual))
+		require.ElementsMatch(t, expected, actual)
+		require.Equal(t, 4*3*2*1, len(actual))
 	})
 
 	t.Run("5s", func(t *testing.T) {
@@ -204,8 +204,8 @@ func disableTestInts(t *testing.T) {
 		}
 
 		actual := Ints(input)
-		assert.ElementsMatch(t, expected, actual)
-		assert.Equal(t, 5*4*3*2*1, len(actual))
+		require.ElementsMatch(t, expected, actual)
+		require.Equal(t, 5*4*3*2*1, len(actual))
 	})
 }
 
@@ -218,8 +218,8 @@ func disableTestIntsRecursive(t *testing.T) {
 		}
 
 		actual := IntsRecursive(input)
-		assert.ElementsMatch(t, expected, actual)
-		assert.Equal(t, 2*1, len(actual))
+		require.ElementsMatch(t, expected, actual)
+		require.Equal(t, 2*1, len(actual))
 	})
 
 	t.Run("3s", func(t *testing.T) {
@@ -236,8 +236,8 @@ func disableTestIntsRecursive(t *testing.T) {
 		}
 
 		actual := IntsRecursive(input)
-		assert.ElementsMatch(t, expected, actual)
-		assert.Equal(t, 3*2*1, len(actual))
+		require.ElementsMatch(t, expected, actual)
+		require.Equal(t, 3*2*1, len(actual))
 	})
 
 	t.Run("4s", func(t *testing.T) {
@@ -273,8 +273,8 @@ func disableTestIntsRecursive(t *testing.T) {
 		}
 
 		actual := IntsRecursive(input)
-		assert.ElementsMatch(t, expected, actual)
-		assert.Equal(t, 4*3*2*1, len(actual))
+		require.ElementsMatch(t, expected, actual)
+		require.Equal(t, 4*3*2*1, len(actual))
 	})
 
 	t.Run("5s", func(t *testing.T) {
@@ -407,7 +407,7 @@ func disableTestIntsRecursive(t *testing.T) {
 		}
 
 		actual := IntsRecursive(input)
-		assert.ElementsMatch(t, expected, actual)
-		assert.Equal(t, 5*4*3*2*1, len(actual))
+		require.ElementsMatch(t, expected, actual)
+		require.Equal(t, 5*4*3*2*1, len(actual))
 	})
 }
