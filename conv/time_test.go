@@ -8,12 +8,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var (
+	day = 24 * time.Hour
+)
+
 func TestDaysSince(t *testing.T) {
 	testCases := []struct {
 		A        time.Time
 		Expected int
 	}{
 		{time.Now(), 0},
+		{time.Now().Add(15 * day), -14},
+		{time.Now().Add(-15 * day), 15},
 	}
 
 	for k, tc := range testCases {
@@ -30,6 +36,8 @@ func TestDiffInDays(t *testing.T) {
 		Expected int
 	}{
 		{time.Now(), time.Now(), 0},
+		{time.Now(), time.Now().Add(15 * day), -15},
+		{time.Now(), time.Now().Add(-15 * day), 14},
 	}
 
 	for k, tc := range testCases {
