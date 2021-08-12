@@ -140,7 +140,12 @@ func (w *ScalyrWriter) UpdateNow(flushBuffer bool) {
 
 		status, err := gojson.ExtractString(r, "status")
 		if status != "success" {
-			w.Println("Scalry Post Status:", status, err.Error())
+			errmsg := "non-success status from scalyr"
+			if err != nil {
+				errmsg = err.Error()
+			}
+
+			w.Println("Scalry Post Status:", status, errmsg)
 			w.Println(string(r))
 			return
 		}
