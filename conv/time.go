@@ -25,6 +25,7 @@ func ParseTime(input string) (time.Time, error) {
 		"2006-01-02T15:04:05",        // MSSQL Non-Space format.
 		"2006-01-02 15:04:05",        // MSSQL With-Space format.
 		"2006-01-02 15:04:05 -07:00", // MSSQL With-Space format and timezone.
+		"2006-01-02T15:04",           // Datetime with no seconds
 		"2006-01-02",
 		"2006.01.02",
 		"2006/01/02",
