@@ -38,6 +38,7 @@ func ParseTime(input string) (time.Time, error) {
 		"01-02-06",
 		"01.02.06",
 		"01/02/06",
+		"1/2/2006",
 	}
 
 	for _, l := range layouts {
