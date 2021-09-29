@@ -1,39 +1,57 @@
 package stack
 
 import (
-	"runtime"
+	"bytes"
+	"runtime/debug"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cast"
 )
 
 // TraceFields builds a log.Fields object when all you need is a stack trace.
 func TraceFields() log.Fields {
-	f, l := Trace(1) // 1 to refer to the caller of this fn.
+
+	stack := bytes.Split(debug.Stack(), []byte{'\n'})
+	var f string
+	var l int
+
+	for i, s := range stack {
+		if strings.Contains(string(s), "github.com/btm6084/utilities/stack.TraceFields") {
+			if i+3 >= len(stack) {
+				return log.Fields{}
+			}
+
+			tmp := strings.TrimSpace(string(stack[i+3]))
+			tmp = strings.Split(tmp, " ")[0]
+			pieces := strings.Split(tmp, ":")
+			f = pieces[0]
+			l = cast.ToInt(pieces[1])
+
+		}
+	}
+
 	return log.Fields{"stacktrace": map[string]interface{}{"file": f, "line": l}}
 }
 
 func Trace(depth int) (string, int) {
-	var pcs [16]uintptr
-	n := runtime.Callers(0, pcs[:])
-
-	if depth < 0 {
-		return "", 0
-	}
-
-	for _, pc := range pcs[:n] {
-		fn := runtime.FuncForPC(pc)
-		n := fn.Name()
-
-		switch {
-		case strings.HasPrefix(n, "runtime."):
-			continue
-		case depth > 0:
-			depth--
-		default:
-			return fn.FileLine(pc)
+	stack := bytes.Split(debug.Stack(), []byte{'\n'})
+	start := 0
+	for i, s := range stack {
+		if strings.Contains(string(s), "github.com/btm6084/utilities/stack.Trace") {
+			start = i
+			break
 		}
 	}
 
-	return "", 0
+	depth = depth + 1
+	index := start + (2 * depth) + 1
+	if index >= len(stack) {
+		index = len(stack) - 1
+	}
+
+	tmp := strings.TrimSpace(string(stack[index]))
+	tmp = strings.Split(tmp, " ")[0]
+	pieces := strings.Split(tmp, ":")
+	return string(pieces[0]), cast.ToInt(pieces[1])
 }
