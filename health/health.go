@@ -2,6 +2,7 @@
 package health
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"log"
@@ -38,7 +39,7 @@ type Checks []*Check
 
 // Checker is an interface for returning healthchecks
 type Checker interface {
-	GetChecks() Checks
+	GetChecks(context.Context) Checks
 	GetResponse(Checks) *Response
 }
 
@@ -73,28 +74,28 @@ func AddServiceCheck(checks Checks) {
 
 // CreateHealthHandler takes a health checker and returns an endpoint for health checks
 func CreateHealthHandler(checker Checker) func(http.ResponseWriter, *http.Request) {
-	return func(writer http.ResponseWriter, reader *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 
-		writer.Header().Set("Cache-Control", "no-store")
+		w.Header().Set("Cache-Control", "no-store")
 
-		res := checker.GetResponse(checker.GetChecks())
+		res := checker.GetResponse(checker.GetChecks(r.Context()))
 
 		if res.Status == "" {
 			res.Status = findStatus(res.Checks)
 		}
 
-		serveJSON(writer, reader, http.StatusOK, res)
+		serveJSON(w, r, http.StatusOK, res)
 	}
 }
 
 // CreateProbeHandler takes a health checker and returns an endpoint for probe
 // checks which return different http statuses
 func CreateProbeHandler(checker Checker) func(http.ResponseWriter, *http.Request) {
-	return func(writer http.ResponseWriter, reader *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 
-		writer.Header().Set("Cache-Control", "no-store")
+		w.Header().Set("Cache-Control", "no-store")
 
-		checks := checker.GetChecks()
+		checks := checker.GetChecks(r.Context())
 
 		res := checker.GetResponse(checks)
 
@@ -114,7 +115,7 @@ func CreateProbeHandler(checker Checker) func(http.ResponseWriter, *http.Request
 			res.Status = findStatus(res.Checks)
 		}
 
-		serveJSON(writer, reader, status, res)
+		serveJSON(w, r, status, res)
 	}
 }
 
