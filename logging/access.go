@@ -93,7 +93,7 @@ func (l logWriter) logRequest(req *http.Request, start time.Time, dur time.Durat
 		"referrer":              escape(first(req.Header["Referer"])),
 		"requestContentLength":  req.ContentLength,
 		"responseContentLength": rw.length,
-		"serverHost":            escape(l.hostname),
+		"serverHN":              escape(l.hostname),
 		"serverIP":              escape(l.ip.String()),
 		"serverPort":            escape(l.port),
 		"time":                  start.Format("15:04:05.000"),
