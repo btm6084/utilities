@@ -41,3 +41,13 @@ func MinInt(a, b int) int {
 	}
 	return b
 }
+
+func FirstNonZeroInt(list ...int) int {
+	for _, v := range list {
+		if v != 0 {
+			return v
+		}
+	}
+
+	return 0
+}
