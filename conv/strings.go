@@ -15,3 +15,13 @@ func QuoteString(s string) string {
 		return `"` + s + `"`
 	}
 }
+
+func FirstNonEmptyString(list ...string) string {
+	for _, v := range list {
+		if v != "" {
+			return v
+		}
+	}
+
+	return ""
+}
