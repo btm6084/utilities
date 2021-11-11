@@ -23,7 +23,7 @@ func ServeETagJSON(w http.ResponseWriter, r *http.Request, statusCode int, data 
 }
 
 func serveJSON(w http.ResponseWriter, r *http.Request, statusCode int, data interface{}, etag bool) {
-	w.Header().Set("Content-Type", "application/hal+json")
+	w.Header().Set("Content-Type", "application/json")
 
 	buf := bytes.NewBuffer(nil)
 	enc := json.NewEncoder(buf)
