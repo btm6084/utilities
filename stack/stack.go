@@ -2,11 +2,17 @@ package stack
 
 import (
 	"bytes"
+	"regexp"
 	"runtime/debug"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cast"
+)
+
+var (
+	fileLineRE = regexp.MustCompile(`^([^:]+):([0-9]+)`)
+	truncateRE = regexp.MustCompile(`/(pkg|cmd)/[^:]+`)
 )
 
 // TraceFields builds a log.Fields object when all you need is a stack trace.
@@ -22,16 +28,19 @@ func TraceFields() log.Fields {
 				return log.Fields{"stacktrace": Strings()}
 			}
 
-			tmp := strings.TrimSpace(string(stack[i+3]))
-			tmp = strings.Split(tmp, " ")[0]
-			pieces := strings.Split(tmp, ":")
+			matches := fileLineRE.FindAllStringSubmatch(strings.TrimSpace(string(stack[i+3])), 1)
 
-			if len(pieces) < 2 {
+			if len(matches) < 1 {
 				return log.Fields{"stacktrace": Strings()}
 			}
 
-			f = pieces[0]
-			l = cast.ToInt(pieces[1])
+			if fa := truncateRE.FindString(matches[0][1]); fa != "" {
+				f = fa
+			} else {
+				f = matches[0][1]
+			}
+
+			l = cast.ToInt(matches[0][2])
 		}
 	}
 
