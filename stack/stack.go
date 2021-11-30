@@ -19,16 +19,24 @@ func TraceFields() log.Fields {
 	for i, s := range stack {
 		if strings.Contains(string(s), "github.com/btm6084/utilities/stack.TraceFields") {
 			if i+3 >= len(stack) {
-				return log.Fields{}
+				return log.Fields{"stacktrace": Strings()}
 			}
 
 			tmp := strings.TrimSpace(string(stack[i+3]))
 			tmp = strings.Split(tmp, " ")[0]
 			pieces := strings.Split(tmp, ":")
+
+			if len(pieces) < 2 {
+				return log.Fields{"stacktrace": Strings()}
+			}
+
 			f = pieces[0]
 			l = cast.ToInt(pieces[1])
-
 		}
+	}
+
+	if f == "" {
+		return log.Fields{"stacktrace": Strings()}
 	}
 
 	return log.Fields{"stacktrace": map[string]interface{}{"file": f, "line": l}}
@@ -54,4 +62,19 @@ func Trace(depth int) (string, int) {
 	tmp = strings.Split(tmp, " ")[0]
 	pieces := strings.Split(tmp, ":")
 	return string(pieces[0]), cast.ToInt(pieces[1])
+}
+
+func String() string {
+	return strings.Join(Strings(), "\n")
+}
+
+func Strings() []string {
+	stack := bytes.Split(debug.Stack(), []byte{'\n'})
+	out := make([]string, len(stack))
+
+	for i, s := range stack {
+		out[i] = string(s)
+	}
+
+	return out
 }
