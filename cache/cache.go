@@ -11,11 +11,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand"
 	"reflect"
 	"strings"
 	"time"
 
 	"github.com/btm6084/gojson"
+	"github.com/btm6084/utilities/conv"
 	"github.com/btm6084/utilities/health"
 	"github.com/btm6084/utilities/metrics"
 	"github.com/btm6084/utilities/redis"
@@ -55,6 +57,8 @@ type Cacher interface {
 }
 
 func init() {
+	rand.Seed(time.Now().UnixMicro())
+
 	if !Enabled {
 		return
 	}
@@ -366,4 +370,16 @@ func checkMemoryCache(c Cacher) *health.Check {
 
 	hc.Data["pingTime"] = time.Since(start).String()
 	return &hc
+}
+
+// Add a random amount of time to a time.Duration. Percent will be between min and max, inclusive.
+func FuzzDuration(d time.Duration, min, max int) time.Duration {
+	max = conv.MaxInt(min, max)
+
+	pct := float64(rand.Intn((max-min)+1) + min)
+	if rand.Intn(2) == 1 {
+		return time.Duration(float64(d) + float64(d)*float64(pct/100))
+	}
+
+	return time.Duration(float64(d) - float64(d)*float64(pct/100))
 }

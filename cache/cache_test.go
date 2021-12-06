@@ -1,8 +1,12 @@
 package cache
 
 import (
+	"fmt"
+	"math/rand"
 	"testing"
+	"time"
 
+	"github.com/btm6084/utilities/conv"
 	"github.com/btm6084/utilities/metrics"
 	"github.com/stretchr/testify/require"
 )
@@ -162,4 +166,48 @@ func TestGetSet(t *testing.T) {
 		require.Equal(t, data, actual)
 	})
 
+}
+
+func TestFuzzDuration(t *testing.T) {
+	var asPct = func(in int) float64 {
+		return conv.ToFixed(float64(in)/100, 2)
+	}
+
+	t.Run("Fixed", func(t *testing.T) {
+		min, max := 5, 20
+		in := 7 * 24 * time.Hour
+		out := FuzzDuration(in, min, max)
+
+		var pct float64
+		var diff float64
+		if in > out { // Minus Branch
+			diff = float64(in) - float64(out)
+			pct = conv.ToFixed(float64(diff)/float64(in), 2)
+		} else { // Plus Branch
+			diff = float64(out) - float64(in)
+			pct = conv.ToFixed(float64(diff)/float64(in), 2)
+		}
+
+		require.True(t, pct >= asPct(min) && pct <= asPct(max), fmt.Sprintf("(%f, %f) Got: %f", asPct(min), asPct(max), pct))
+	})
+
+	for i := 0; i < 1000; i++ {
+		min, max := rand.Intn(100), rand.Intn(100)
+		max = conv.MaxInt(min, max)
+
+		in := 7 * 24 * time.Hour
+		out := FuzzDuration(in, min, max)
+
+		var pct float64
+		var diff float64
+		if in > out { // Minus Branch
+			diff = float64(in) - float64(out)
+			pct = conv.ToFixed(float64(diff)/float64(in), 2)
+		} else { // Plus Branch
+			diff = float64(out) - float64(in)
+			pct = conv.ToFixed(float64(diff)/float64(in), 2)
+		}
+
+		require.True(t, pct >= asPct(min) && pct <= asPct(max), fmt.Sprintf("(%f, %f) Got: %f", asPct(min), asPct(max), pct))
+	}
 }
