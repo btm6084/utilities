@@ -32,6 +32,7 @@ func ParseTime(input string) (time.Time, error) {
 		"01-02-2006",
 		"01.02.2006",
 		"01/02/2006",
+		"01/02/2006 03:04:05 PM", // Marketplace homepage json format
 		"06-01-02",
 		"06.01.02",
 		"06/01/02",
