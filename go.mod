@@ -22,3 +22,19 @@ require (
 	google.golang.org/genproto v0.0.0-20210324141432-3032e8ff099e // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
+
+require (
+	github.com/cespare/xxhash/v2 v2.1.1 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/go-sql-driver/mysql v1.5.0 // indirect
+	github.com/go-test/deep v1.0.7 // indirect
+	github.com/golang-sql/civil v0.0.0-20190719163853-cb61b32ac6fe // indirect
+	github.com/golang/protobuf v1.5.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	go.opentelemetry.io/otel v0.16.0 // indirect
+	golang.org/x/sys v0.0.0-20210324051608-47abb6519492 // indirect
+	golang.org/x/text v0.3.5 // indirect
+	google.golang.org/grpc v1.36.0 // indirect
+	google.golang.org/protobuf v1.26.0 // indirect
+)
