@@ -52,6 +52,16 @@ func StringToInt(in []string) []int {
 	return out
 }
 
+// IntToString takes a slice of int and returns a slice of string.
+func IntToString(in []int) []string {
+	out := make([]string, len(in))
+	for i := 0; i < len(in); i++ {
+		out[i] = cast.ToString(in[i])
+	}
+
+	return out
+}
+
 // ContainsString returns true if string needle is an element in string slice haystack
 func ContainsString(haystack []string, needle string) bool {
 	for _, v := range haystack {
