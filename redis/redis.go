@@ -21,6 +21,9 @@ var (
 
 	// ErrNotFound is returned when no data was found
 	ErrNotFound = errors.New("not found")
+
+	// Compiler will enforce the interface and let us know if the contract is broken.
+	_ Cache = (*Client)(nil)
 )
 
 func init() {
