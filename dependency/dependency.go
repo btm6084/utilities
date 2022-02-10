@@ -14,4 +14,7 @@ const (
 
 	// rdbContextKey is the key under which we store the redis interface in context.
 	rdbContextKey key = 3
+
+	// reqContextKey is the key under which we store the requestor interface in context.
+	reqContextKey key = 4
 )
