@@ -4,22 +4,31 @@ import (
 	"archive/zip"
 	"bytes"
 	"errors"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
-	"time"
+	"path/filepath"
 
 	log "github.com/sirupsen/logrus"
+)
+
+var (
+	ErrNotFound = errors.New("not found")
 )
 
 const (
 	bodySampleSize = 45
 )
 
+// HTTPGetFunc is used to determine how remote URLs are downloaded.
+// http.Get satisfies this type.
+type HTTPGetFunc func(string) (*http.Response, error)
+
 // DownloadZipFile downloads a zipfile from the given url and returns a zip.Reader
-func DownloadZipFile(url string) (*zip.Reader, error) {
-	http.DefaultClient.Timeout = 10 * time.Second
-	data, err := http.Get(url)
+// The getFn matches the signature of http.Get
+func DownloadZipFile(getFn HTTPGetFunc, url string) (*zip.Reader, error) {
+	data, err := getFn(url)
 	if err != nil {
 		return nil, err
 	}
@@ -83,4 +92,25 @@ func GetZipFileFromDisk(fileName string) (*zip.Reader, error) {
 	}
 
 	return zipFile, nil
+}
+
+func GetFileFromZip(r *zip.Reader, fileName string) ([]byte, error) {
+	for _, file := range r.File {
+		_, name := filepath.Split(file.Name)
+
+		if name != fileName {
+			continue // directory
+		}
+
+		f, err := file.Open()
+		if err != nil {
+			return nil, err
+		}
+
+		defer f.Close()
+
+		return io.ReadAll(f)
+	}
+
+	return nil, ErrNotFound
 }
