@@ -84,8 +84,7 @@ func (c *Client) Ping(r metrics.Recorder) error {
 	return nil
 }
 
-// Get returns the value at `key`
-func (c *Client) Get(r metrics.Recorder, key string) (interface{}, error) {
+func (c *Client) GetString(r metrics.Recorder, key string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), c.requestTimeout)
 	defer cancel()
 
@@ -102,6 +101,11 @@ func (c *Client) Get(r metrics.Recorder, key string) (interface{}, error) {
 	}
 
 	return rsp.Val(), nil
+}
+
+// Get returns the value at `key`
+func (c *Client) Get(r metrics.Recorder, key string) (interface{}, error) {
+	return c.GetString(r, key)
 }
 
 // TTL returns the TTL for the value at `key`

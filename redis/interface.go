@@ -9,6 +9,7 @@ import (
 type Cache interface {
 	ForeverTTL() int
 	Ping(metrics.Recorder) error
+	GetString(metrics.Recorder, string) (string, error)
 	Get(metrics.Recorder, string) (interface{}, error)
 	TTL(metrics.Recorder, string) (time.Duration, error)
 	Set(metrics.Recorder, string, interface{}) error

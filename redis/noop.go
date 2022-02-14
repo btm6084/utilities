@@ -16,6 +16,7 @@ type Noop struct{}
 
 func (n *Noop) ForeverTTL() int                                           { return 0 }
 func (n *Noop) Ping(metrics.Recorder) error                               { return nil }
+func (n *Noop) GetString(metrics.Recorder, string) (string, error)        { return "", ErrNotFound }
 func (n *Noop) Get(metrics.Recorder, string) (interface{}, error)         { return nil, ErrNotFound }
 func (n *Noop) TTL(metrics.Recorder, string) (time.Duration, error)       { return 0, nil }
 func (n *Noop) Set(metrics.Recorder, string, interface{}) error           { return nil }
