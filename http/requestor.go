@@ -25,6 +25,7 @@ type RequestResponse struct {
 	Body        []byte
 	ContentType string
 	StatusCode  int
+	Headers     http.Header
 }
 
 // Requestor is an interface for making http requests
@@ -109,5 +110,10 @@ func (r *HttpRequestor) DoRequest(ctx context.Context, method, url string, optio
 		}
 	}
 
-	return RequestResponse{Body: b, ContentType: ct, StatusCode: res.StatusCode}, nil
+	return RequestResponse{
+		Body:        b,
+		ContentType: ct,
+		StatusCode:  res.StatusCode,
+		Headers:     res.Header,
+	}, nil
 }
