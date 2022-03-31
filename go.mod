@@ -18,10 +18,12 @@ require (
 	github.com/spf13/cast v1.3.1
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2 // indirect
-	golang.org/x/net v0.0.0-20210324205630-d1beb07c2056 // indirect
+	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
 	google.golang.org/genproto v0.0.0-20210324141432-3032e8ff099e // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
+
+require github.com/opensearch-project/opensearch-go v1.1.0
 
 require (
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
@@ -33,8 +35,8 @@ require (
 	github.com/golang/protobuf v1.5.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	go.opentelemetry.io/otel v0.16.0 // indirect
-	golang.org/x/sys v0.0.0-20210324051608-47abb6519492 // indirect
-	golang.org/x/text v0.3.5 // indirect
+	golang.org/x/sys v0.0.0-20210423082822-04245dca01da // indirect
+	golang.org/x/text v0.3.6 // indirect
 	google.golang.org/grpc v1.36.0 // indirect
 	google.golang.org/protobuf v1.26.0 // indirect
 )
