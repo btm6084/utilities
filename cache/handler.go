@@ -35,6 +35,11 @@ type ResponseWriterTee struct {
 	w          http.ResponseWriter
 }
 
+type HandlerOptions struct {
+	NoCacheControlHeader bool
+	ExcludedPaths        []string
+}
+
 // Header proxies http.ResponseWriter Header
 func (w *ResponseWriterTee) Header() http.Header {
 	return w.w.Header()
@@ -54,30 +59,39 @@ func (w *ResponseWriterTee) Write(b []byte) (int, error) {
 
 // Middleware provides a cache-layer middleware for caching the input/output for GET requests.
 func Middleware(cacheDuration int, excludedPaths []string) func(http.Handler) http.Handler {
+	return MiddlewareOpts(cacheDuration, HandlerOptions{ExcludedPaths: excludedPaths})
+}
+func MiddlewareOpts(cacheDuration int, opts HandlerOptions) func(http.Handler) http.Handler {
 	d := time.Duration(cacheDuration) * time.Second
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if !Enabled || r.Method != "GET" || excludedFromCache(r, excludedPaths) || cast.ToBool(r.URL.Query().Get("noCache")) {
+			if !Enabled || r.Method != "GET" || excludedFromCache(r, opts.ExcludedPaths) || cast.ToBool(r.URL.Query().Get("noCache")) {
 				next.ServeHTTP(w, r)
-				w.Header().Set("Cache-Control", "no-cache")
+				if !opts.NoCacheControlHeader {
+					w.Header().Set("Cache-Control", "no-cache")
+				}
 				return
 			}
 
 			key := r.Method + r.RequestURI + r.Header.Get("range")
 			m := metrics.GetRecorder(r.Context())
 
-			if handlerTryCache(w, r, m, key, d) {
+			if handlerTryCache(w, r, m, opts, key, d) {
 				return
 			}
 
-			handleCacheableRequest(next, w, r, m, key, d)
+			handleCacheableRequest(next, w, r, m, opts, key, d)
 		})
 	}
 }
 
-// HandlerWrapper provices a cache-layer wrapper for a single API route.
 func HandlerWrapper(cacheDuration int, next http.Handler) http.HandlerFunc {
+	return HandlerWrapperOpts(cacheDuration, HandlerOptions{}, next)
+}
+
+// HandlerWrapper provices a cache-layer wrapper for a single API route.
+func HandlerWrapperOpts(cacheDuration int, opts HandlerOptions, next http.Handler) http.HandlerFunc {
 	d := time.Duration(cacheDuration) * time.Second
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -90,15 +104,15 @@ func HandlerWrapper(cacheDuration int, next http.Handler) http.HandlerFunc {
 		m := metrics.GetRecorder(r.Context())
 		key := r.Method + r.RequestURI + r.Header.Get("range")
 
-		if handlerTryCache(w, r, m, key, d) {
+		if handlerTryCache(w, r, m, opts, key, d) {
 			return
 		}
 
-		handleCacheableRequest(next, w, r, m, key, d)
+		handleCacheableRequest(next, w, r, m, opts, key, d)
 	})
 }
 
-func handlerTryCache(w http.ResponseWriter, r *http.Request, m metrics.Recorder, key string, d time.Duration) bool {
+func handlerTryCache(w http.ResponseWriter, r *http.Request, m metrics.Recorder, opts HandlerOptions, key string, d time.Duration) bool {
 
 	var ce CacheEvent
 	if err := Get(m, key, &ce); err == nil {
@@ -114,7 +128,9 @@ func handlerTryCache(w http.ResponseWriter, r *http.Request, m metrics.Recorder,
 		}
 
 		w.Header().Set("X-Cache-Hit", "true")
-		w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d, public", int(d/time.Second)))
+		if !opts.NoCacheControlHeader {
+			w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d, public", int(d/time.Second)))
+		}
 		w.WriteHeader(ce.StatusCode)
 		w.Write([]byte(ce.Content))
 		return true
@@ -123,10 +139,12 @@ func handlerTryCache(w http.ResponseWriter, r *http.Request, m metrics.Recorder,
 	return false
 }
 
-func handleCacheableRequest(next http.Handler, w http.ResponseWriter, r *http.Request, m metrics.Recorder, key string, d time.Duration) {
+func handleCacheableRequest(next http.Handler, w http.ResponseWriter, r *http.Request, m metrics.Recorder, opts HandlerOptions, key string, d time.Duration) {
 	writer := ResponseWriterTee{w: w}
 	w.Header().Set("X-Cache-Hit", "false")
-	w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d, public", int(d/time.Second)))
+	if !opts.NoCacheControlHeader {
+		w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d, public", int(d/time.Second)))
+	}
 
 	req := logging.RequestWithCacheStatus(r, false)
 	if r != nil && req != nil {
