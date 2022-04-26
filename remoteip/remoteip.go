@@ -3,6 +3,7 @@ package remoteip
 import (
 	"net"
 	"net/http"
+	"strings"
 )
 
 // Get returns the remote IP address from the request.
@@ -20,10 +21,13 @@ func Get(r *http.Request) string {
 		raw = r.RemoteAddr
 	}
 
+	pieces := strings.Split(raw, ",")
+	candidate := strings.Trim(pieces[0], `'" `)
+
 	var host string
-	host, _, err := net.SplitHostPort(raw)
+	host, _, err := net.SplitHostPort(candidate)
 	if err != nil {
-		host = raw
+		host = candidate
 	}
 
 	ip := net.ParseIP(host)

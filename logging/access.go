@@ -42,7 +42,7 @@ func firstNonEmptyString(list ...string) string {
 
 func UserAgent(req *http.Request) string {
 	ua := firstNonEmptyString(req.Header.Get("X-User-Agent"), req.Header.Get("User-Agent"), "-")
-	return strings.Trim(ua, ` "`)
+	return strings.Trim(ua, `'" `)
 }
 
 func escape(in string) string {
