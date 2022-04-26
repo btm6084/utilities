@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/btm6084/utilities/remoteip"
@@ -27,6 +28,21 @@ func first(in []string) string {
 	}
 
 	return "-"
+}
+
+func firstNonEmptyString(list ...string) string {
+	for _, v := range list {
+		if v != "" {
+			return v
+		}
+	}
+
+	return ""
+}
+
+func UserAgent(req *http.Request) string {
+	ua := firstNonEmptyString(req.Header.Get("X-User-Agent"), req.Header.Get("User-Agent"), "-")
+	return strings.Trim(ua, ` "`)
 }
 
 func escape(in string) string {
@@ -98,7 +114,7 @@ func (l logWriter) logRequest(req *http.Request, start time.Time, dur time.Durat
 		"serverPort":            escape(l.port),
 		"time":                  start.Format("15:04:05.000"),
 		"txnID":                 TransactionFromContext(req.Context()),
-		"userAgent":             escape(first(req.Header["User-Agent"])),
+		"userAgent":             UserAgent(req),
 		"username":              escape(username),
 	}
 
