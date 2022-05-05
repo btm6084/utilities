@@ -13,6 +13,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var (
+	DefaultTimeout = 10 * time.Second
+)
+
 // RequestOptions is the data to configure an http request sent by a Requestor
 type RequestOptions struct {
 	Body    []byte
@@ -55,8 +59,15 @@ func NewRequestor(c *http.Client) Requestor {
 }
 
 // DoRequest executes and parsed the response of an http request
+// The context passed in will be used for request timeouts, UNLESS there is no timeout set, at which point the default will be used.
 func (r *HttpRequestor) DoRequest(ctx context.Context, method, url string, options RequestOptions) (RequestResponse, error) {
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(options.Body))
+	if _, ok := ctx.Deadline(); !ok {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, DefaultTimeout)
+		defer cancel()
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, url, bytes.NewBuffer(options.Body))
 	if err != nil {
 		log.WithFields(logging.TxnFields(ctx)).WithFields(log.Fields{"passthrough_url": url}).Println(err)
 		return RequestResponse{}, err
