@@ -12,8 +12,8 @@ var (
 	searchLabel = `searchInstance`
 )
 
-// OpenearchDependencyHandler is a middleware to inject an opensearch.Client into context.
-func OpenearchDependencyHandler(search *opensearch.Client) func(http.Handler) http.Handler {
+// OpensearchDependencyHandler is a middleware to inject an opensearch.Client into context.
+func OpensearchDependencyHandler(search *opensearch.Client) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			next.ServeHTTP(w, r.WithContext(ContextWithOpensearch(r.Context(), search)))
