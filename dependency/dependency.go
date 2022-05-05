@@ -17,4 +17,7 @@ const (
 
 	// reqContextKey is the key under which we store the requestor interface in context.
 	reqContextKey key = 4
+
+	// opensearchContextKey is the key under which we store the opensearch interface in context.
+	opensearchContextKey key = 5
 )
