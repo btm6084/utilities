@@ -8,7 +8,7 @@ var (
 	numericLeadingZero = regexp.MustCompile("^-?[0-9]+$")
 
 	// idWord matches a single word-character identifier. Allows spaces.
-	idWord = regexp.MustCompile(`^[A-Za-z_][\w ]*$`)
+	idWord = regexp.MustCompile(`^[\w ]+$`)
 
 	alpha    = regexp.MustCompile(`^[A-Za-z]+$`)
 	alphaNum = regexp.MustCompile(`^[A-Za-z0-9]+$`)

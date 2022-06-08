@@ -1,6 +1,6 @@
 module github.com/btm6084/utilities
 
-go 1.17
+go 1.18
 
 require (
 	github.com/btm6084/godb v1.0.11

@@ -121,7 +121,7 @@ func TestIsIdentifier(t *testing.T) {
 		{"3728123123", true},
 		{"-3728123123", false},
 		{"-0728123123", false},
-		{"003728123123", false},
+		{"003728123123", true},
 		{"_003728123123", true},
 	}
 

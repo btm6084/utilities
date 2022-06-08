@@ -6,10 +6,10 @@ import (
 	"github.com/spf13/cast"
 )
 
-// UniqueInt takes a slice of int and returns a slice with only unique elements.
-func UniqueInt(in []int) []int {
-	seen := make(map[int]bool)
-	var out []int
+func Unique[T comparable](in []T) []T {
+	seen := make(map[T]bool)
+	var out []T
+
 	for _, v := range in {
 		if _, isset := seen[v]; isset {
 			continue
@@ -20,6 +20,20 @@ func UniqueInt(in []int) []int {
 	}
 
 	return out
+}
+
+func ToInterface[T any](in []T) []interface{} {
+	out := make([]interface{}, len(in))
+	for i, v := range in {
+		out[i] = v
+	}
+
+	return out
+}
+
+// UniqueInt takes a slice of int and returns a slice with only unique elements.
+func UniqueInt(in []int) []int {
+	return Unique(in)
 }
 
 // UniqueString takes a slice of string and returns a slice with only unique elements.
