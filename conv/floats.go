@@ -45,3 +45,23 @@ func RatioPercent(a, b float64) float64 {
 	}
 	return float64(int(((a / b) * 10000))) / 100.00
 }
+
+func FirstNonZeroFloat(list ...float64) float64 {
+	for _, v := range list {
+		if v != 0 {
+			return v
+		}
+	}
+
+	return 0
+}
+
+func FirstPositiveFloat(list ...float64) float64 {
+	for _, v := range list {
+		if v > 0 {
+			return v
+		}
+	}
+
+	return 0
+}

@@ -51,3 +51,13 @@ func FirstNonZeroInt(list ...int) int {
 
 	return 0
 }
+
+func FirstPositiveInt(list ...int) int {
+	for _, v := range list {
+		if v > 0 {
+			return v
+		}
+	}
+
+	return 0
+}
