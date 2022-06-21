@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cast"
 )
 
-func Contains[T comparable](needle T, haystack []T) bool {
+func Contains[T comparable](haystack []T, needle T) bool {
 	for _, v := range haystack {
 		if v == needle {
 			return true

@@ -6,6 +6,26 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestContains(t *testing.T) {
+
+	t.Run("int", func(t *testing.T) {
+		in := []int{1, 2, 3, 4, 5, 99999}
+
+		require.Equal(t, true, Contains(in, 1))
+		require.Equal(t, true, Contains(in, 99999))
+		require.Equal(t, false, Contains(in, 123))
+	})
+
+	t.Run("string", func(t *testing.T) {
+		in := []string{"1", "2", "3", "4", "5", "99999"}
+
+		require.Equal(t, true, Contains(in, "1"))
+		require.Equal(t, true, Contains(in, "99999"))
+		require.Equal(t, false, Contains(in, "123"))
+	})
+
+}
+
 func TestIntToString(t *testing.T) {
 	in := []int{1, 2, 3, 4, 5, 99999}
 	ex := []string{"1", "2", "3", "4", "5", "99999"}
