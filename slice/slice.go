@@ -6,6 +6,16 @@ import (
 	"github.com/spf13/cast"
 )
 
+func Contains[T comparable](needle T, haystack []T) bool {
+	for _, v := range haystack {
+		if v == needle {
+			return true
+		}
+	}
+
+	return false
+}
+
 func Unique[T comparable](in []T) []T {
 	seen := make(map[T]bool)
 	var out []T
