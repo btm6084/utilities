@@ -31,3 +31,19 @@ func ToFixed(num float64, precision int) float64 {
 	output := math.Pow(10, float64(precision))
 	return float64(Round(num*output)) / output
 }
+
+func ZeroIfNilInt(in *int) int {
+	if in == nil {
+		return 0
+	}
+
+	return *in
+}
+
+func ZeroIfNilFloat(in *float64) float64 {
+	if in == nil {
+		return 0
+	}
+
+	return *in
+}
