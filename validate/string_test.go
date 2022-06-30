@@ -107,6 +107,34 @@ func TestIsIntegerLeadingZeros(t *testing.T) {
 	}
 }
 
+func TestIsPositiveInteger(t *testing.T) {
+	var testCases = []struct {
+		Input    string
+		Expected bool
+	}{
+		{"Hello", false},
+		{"lskdhflshdfasiyhdflsakdhflaskdhvasdlfv", false},
+		{"ls12kdhfl3shdfasiyhdfl32213123sakdh2flaskdh3vasdlfv", false},
+		{"lskdhfls h d fasiyhdflsakdhflaskdhvasdlfv", false},
+		{"Hello!", false},
+		{"Alpha Numeric 123", false},
+		{"3728123123", true},
+		{"0", true},
+		{"1", true},
+		{"01", false},
+		{"-3728123123", false},
+		{"-0728123123", false},
+		{"003728123123", false},
+		{"_003728123123", false},
+	}
+
+	for n, tc := range testCases {
+		t.Run("IsIntegerWithZeros "+cast.ToString(n), func(t *testing.T) {
+			require.Equal(t, tc.Expected, IsPositiveInteger(tc.Input), tc.Input)
+		})
+	}
+}
+
 func TestIsIdentifier(t *testing.T) {
 	var testCases = []struct {
 		Input    string

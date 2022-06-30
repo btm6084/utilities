@@ -4,6 +4,7 @@ import "regexp"
 
 var (
 	// IDNumber matches a single integer, potentially negative.
+	positiveNumeric    = regexp.MustCompile("^0$|^([1-9][0-9]*)$")
 	numeric            = regexp.MustCompile("^-?[1-9][0-9]*$")
 	numericLeadingZero = regexp.MustCompile("^-?[0-9]+$")
 
@@ -24,6 +25,15 @@ func IsInteger(in string, allowLeadingZeros bool) bool {
 	}
 
 	return numeric.MatchString(in)
+}
+
+// IsPositiveInteger returns true if the input string represents a positive integer
+func IsPositiveInteger(in string) bool {
+	if in == "0" {
+		return true
+	}
+
+	return positiveNumeric.MatchString(in)
 }
 
 func IsIdentifier(in string) bool {
