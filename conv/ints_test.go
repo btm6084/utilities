@@ -1,7 +1,10 @@
 package conv
 
 import (
+	"fmt"
+	"math/rand"
 	"testing"
+	"time"
 
 	"github.com/spf13/cast"
 	"github.com/stretchr/testify/require"
@@ -94,5 +97,32 @@ func TestDefaultMaxInts(t *testing.T) {
 		t.Run(cast.ToString(k+1), func(t *testing.T) {
 			require.Equal(t, tc.Expected, DefaultMaxInt(tc.Val, tc.Default, tc.Max))
 		})
+	}
+}
+
+func TestFuzzInt(t *testing.T) {
+	rand.Seed(time.Now().UnixMicro())
+	var asPct = func(in int) float64 {
+		return ToFixed(float64(in)/100, 2)
+	}
+
+	for i := 0; i < 10000; i++ {
+		min := rand.Intn(100)
+		max := rand.Intn(100-min) + min
+
+		in := 100
+		out := FuzzInt(in, min, max)
+
+		var pct float64
+		var diff float64
+		if in > out { // Minus Branch
+			diff = float64(in) - float64(out)
+			pct = ToFixed(float64(diff)/float64(in), 2)
+		} else { // Plus Branch
+			diff = float64(out) - float64(in)
+			pct = ToFixed(float64(diff)/float64(in), 2)
+		}
+
+		require.True(t, pct >= asPct(min) && pct <= asPct(max), fmt.Sprintf("(%f, %f) Got: %f", asPct(min), asPct(max), pct))
 	}
 }
