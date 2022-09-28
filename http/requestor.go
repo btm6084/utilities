@@ -51,7 +51,6 @@ func NewRequestor(c *http.Client) Requestor {
 		t.MaxIdleConnsPerHost = 100
 
 		c = &http.Client{
-			Timeout:   10 * time.Second,
 			Transport: t,
 		}
 	}
