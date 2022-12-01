@@ -7,6 +7,16 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
+func Sum[T constraints.Ordered](haystack ...T) T {
+	var out T
+
+	for _, v := range haystack {
+		out += v
+	}
+
+	return out
+}
+
 func Max[T constraints.Ordered](haystack ...T) T {
 	var out T
 
