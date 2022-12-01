@@ -4,7 +4,20 @@ import (
 	"sort"
 
 	"github.com/spf13/cast"
+	"golang.org/x/exp/constraints"
 )
+
+func Max[T constraints.Ordered](haystack ...T) T {
+	var out T
+
+	for _, v := range haystack {
+		if v > out {
+			out = v
+		}
+	}
+
+	return out
+}
 
 func Contains[T comparable](haystack []T, needle T) bool {
 	for _, v := range haystack {

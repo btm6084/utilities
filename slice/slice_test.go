@@ -6,6 +6,25 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestMax(t *testing.T) {
+	t.Run("int", func(t *testing.T) {
+		in := []int{1, 2, 3, 4, 5, 99999}
+
+		require.Equal(t, 99999, Max(in...))
+	})
+
+	t.Run("string", func(t *testing.T) {
+		in := []string{"1", "2", "99999", "3", "4", "5"}
+		require.Equal(t, "99999", Max(in...))
+	})
+
+	t.Run("float", func(t *testing.T) {
+		in := []float64{1.1, 2.2, 5.1, 3, 4.4, 5, 5.01}
+
+		require.Equal(t, 5.1, Max(in...))
+	})
+}
+
 func TestContains(t *testing.T) {
 
 	t.Run("int", func(t *testing.T) {
