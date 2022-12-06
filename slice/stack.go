@@ -6,6 +6,42 @@ var (
 	ErrStackEmpty = errors.New("stack is empty")
 )
 
+type Stack[T any] struct {
+	items []T
+}
+
+func (s *Stack[T]) Push(value T) {
+	s.items = append(s.items, value)
+}
+
+func (s *Stack[T]) Pop() (T, error) {
+	var empty T
+	n := len(s.items)
+
+	if n == 0 {
+		return empty, ErrStackEmpty
+	}
+
+	i := s.items[len(s.items)-1]
+	s.items = s.items[:len(s.items)-1]
+	return i, nil
+}
+
+func (s *Stack[T]) Peek() (T, error) {
+	var empty T
+	n := len(s.items)
+
+	if n == 0 {
+		return empty, ErrStackEmpty
+	}
+
+	return s.items[n-1], nil
+}
+
+func (s *Stack[T]) Len() int {
+	return len(s.items)
+}
+
 type IntStack struct {
 	ints []int
 }
