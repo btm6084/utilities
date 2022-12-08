@@ -7,6 +7,18 @@ import (
 )
 
 func TestGenericStack(t *testing.T) {
+	t.Run("Copy", func(t *testing.T) {
+		s := Stack[string]{}
+		s.Push("5")
+		s.Push("4")
+		s.Push("c")
+		s.Push("2")
+		s.Push("a")
+
+		cpy := s.Copy()
+		require.Equal(t, s.items, cpy.items)
+	})
+
 	t.Run("Bool", func(t *testing.T) {
 		s := Stack[bool]{}
 

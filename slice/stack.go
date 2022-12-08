@@ -42,6 +42,14 @@ func (s *Stack[T]) Len() int {
 	return len(s.items)
 }
 
+func (s *Stack[T]) Copy() Stack[T] {
+	var newStack Stack[T]
+	newStack.items = make([]T, len(s.items))
+
+	copy(newStack.items, s.items)
+	return newStack
+}
+
 type IntStack struct {
 	ints []int
 }
