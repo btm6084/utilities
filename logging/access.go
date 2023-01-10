@@ -157,7 +157,7 @@ func CreateLogger(logger io.Writer, listenPort int, pretty bool) func(http.Handl
 }
 
 // CustomAccessLog creates a custom access logger
-func CustomAccessLog(logger Logger, listenPort int, pretty bool) func(http.Handler) http.Handler {
+func CustomAccessLog(logger Logger, pretty bool) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			start := time.Now()
