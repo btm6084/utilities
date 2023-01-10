@@ -73,14 +73,18 @@ func (l *responseWriter) WriteHeader(status int) {
 	l.w.WriteHeader(status)
 }
 
-type logWriter struct {
+type Logger interface {
+	LogRequest(req *http.Request, start time.Time, dur time.Duration, rw *responseWriter, pretty bool)
+}
+
+type LogWriter struct {
 	hostname string
 	ip       net.IP
 	port     string
 	logger   io.Writer
 }
 
-func (l logWriter) logRequest(req *http.Request, start time.Time, dur time.Duration, rw *responseWriter, pretty bool) {
+func (l LogWriter) LogRequest(req *http.Request, start time.Time, dur time.Duration, rw *responseWriter, pretty bool) {
 	var username = "-"
 	if req.URL.User != nil {
 		if name := req.URL.User.Username(); name != "" {
@@ -132,7 +136,7 @@ func CreateLogger(logger io.Writer, listenPort int, pretty bool) func(http.Handl
 		hostname = "-"
 	}
 
-	lw := logWriter{hostname: hostname, logger: logger, ip: GetOutboundIP(), port: strconv.Itoa(listenPort)}
+	lw := LogWriter{hostname: hostname, logger: logger, ip: GetOutboundIP(), port: strconv.Itoa(listenPort)}
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -147,7 +151,27 @@ func CreateLogger(logger io.Writer, listenPort int, pretty bool) func(http.Handl
 				rw.length = 0
 			}
 
-			lw.logRequest(req, start, time.Since(start), rw, pretty)
+			lw.LogRequest(req, start, time.Since(start), rw, pretty)
+		})
+	}
+}
+
+// CustomAccessLog creates a custom access logger
+func CustomAccessLog(logger Logger, listenPort int, pretty bool) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			start := time.Now()
+			rw := &responseWriter{w, 0, 0}
+			next.ServeHTTP(rw, req)
+
+			// Check for a timeout error, and make sure its status gets logged.
+			ctxErr := req.Context().Err()
+			if ctxErr != nil && req.Context().Err().Error() == "context deadline exceeded" {
+				rw.status = http.StatusServiceUnavailable
+				rw.length = 0
+			}
+
+			logger.LogRequest(req, start, time.Since(start), rw, pretty)
 		})
 	}
 }
