@@ -54,27 +54,27 @@ func escape(in string) string {
 	return "-"
 }
 
-type responseWriter struct {
+type ResponseWriter struct {
 	w      http.ResponseWriter
 	status int
 	length int
 }
 
-func (l *responseWriter) Header() http.Header { return l.w.Header() }
+func (l *ResponseWriter) Header() http.Header { return l.w.Header() }
 
-func (l *responseWriter) Write(data []byte) (int, error) {
+func (l *ResponseWriter) Write(data []byte) (int, error) {
 	n, err := l.w.Write(data)
 	l.length += n
 	return n, err
 }
 
-func (l *responseWriter) WriteHeader(status int) {
+func (l *ResponseWriter) WriteHeader(status int) {
 	l.status = status
 	l.w.WriteHeader(status)
 }
 
 type Logger interface {
-	LogRequest(req *http.Request, start time.Time, dur time.Duration, rw *responseWriter, pretty bool)
+	LogRequest(req *http.Request, start time.Time, dur time.Duration, rw *ResponseWriter, pretty bool)
 }
 
 type LogWriter struct {
@@ -84,7 +84,7 @@ type LogWriter struct {
 	logger   io.Writer
 }
 
-func (l LogWriter) LogRequest(req *http.Request, start time.Time, dur time.Duration, rw *responseWriter, pretty bool) {
+func (l LogWriter) LogRequest(req *http.Request, start time.Time, dur time.Duration, rw *ResponseWriter, pretty bool) {
 	var username = "-"
 	if req.URL.User != nil {
 		if name := req.URL.User.Username(); name != "" {
@@ -141,7 +141,7 @@ func CreateLogger(logger io.Writer, listenPort int, pretty bool) func(http.Handl
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			start := time.Now()
-			rw := &responseWriter{w, 0, 0}
+			rw := &ResponseWriter{w, 0, 0}
 			next.ServeHTTP(rw, req)
 
 			// Check for a timeout error, and make sure its status gets logged.
@@ -161,7 +161,7 @@ func CustomAccessLog(logger Logger, listenPort int, pretty bool) func(http.Handl
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			start := time.Now()
-			rw := &responseWriter{w, 0, 0}
+			rw := &ResponseWriter{w, 0, 0}
 			next.ServeHTTP(rw, req)
 
 			// Check for a timeout error, and make sure its status gets logged.
