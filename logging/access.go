@@ -78,10 +78,10 @@ type Logger interface {
 }
 
 type LogWriter struct {
-	hostname string
-	ip       net.IP
-	port     string
-	logger   io.Writer
+	Hostname string
+	IP       net.IP
+	Port     string
+	Logger   io.Writer
 }
 
 func (l LogWriter) LogRequest(req *http.Request, start time.Time, dur time.Duration, rw *ResponseWriter, pretty bool) {
@@ -113,9 +113,9 @@ func (l LogWriter) LogRequest(req *http.Request, start time.Time, dur time.Durat
 		"referrer":              escape(first(req.Header["Referer"])),
 		"requestContentLength":  req.ContentLength,
 		"responseContentLength": rw.length,
-		"serverHN":              escape(l.hostname),
-		"serverIP":              escape(l.ip.String()),
-		"serverPort":            escape(l.port),
+		"serverHN":              escape(l.Hostname),
+		"serverIP":              escape(l.IP.String()),
+		"serverPort":            escape(l.Port),
 		"time":                  start.Format("15:04:05.000"),
 		"txnID":                 TransactionFromContext(req.Context()),
 		"userAgent":             UserAgent(req),
@@ -126,7 +126,7 @@ func (l LogWriter) LogRequest(req *http.Request, start time.Time, dur time.Durat
 	if pretty {
 		raw, _ = json.MarshalIndent(out, "", "\t")
 	}
-	fmt.Fprintln(l.logger, string(raw))
+	fmt.Fprintln(l.Logger, string(raw))
 }
 
 // CreateLogger creates an access logger
@@ -136,7 +136,7 @@ func CreateLogger(logger io.Writer, listenPort int, pretty bool) func(http.Handl
 		hostname = "-"
 	}
 
-	lw := LogWriter{hostname: hostname, logger: logger, ip: GetOutboundIP(), port: strconv.Itoa(listenPort)}
+	lw := LogWriter{Hostname: hostname, Logger: logger, IP: GetOutboundIP(), Port: strconv.Itoa(listenPort)}
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
