@@ -84,6 +84,29 @@ type LogWriter struct {
 	Logger   io.Writer
 }
 
+type AccessLog struct {
+	ClientIP              string          `json:"cIP,omitempty"`
+	ContentType           string          `json:"-"`
+	Cookies               string          `json:"-"`
+	Date                  string          `json:"date,omitempty"`
+	Duration              time.Duration   `json:"dur,omitempty"`
+	FromCache             bool            `json:"cache,omitempty"`
+	HttpStatusCode        int             `json:"code,omitempty"`
+	Method                string          `json:"method,omitempty"`
+	Path                  string          `json:"path,omitempty"`
+	QueryString           json.RawMessage `json:"qs,omitempty"`
+	Referrer              string          `json:"rfer,omitempty"`
+	RequestContentLength  int             `json:"rqCL,omitempty"`
+	ResponseContentLength int             `json:"rsCL,omitempty"`
+	ServerHN              string          `json:"sHN,omitempty"`
+	ServerIP              string          `json:"sIP,omitempty"`
+	ServerPort            string          `json:"sPT,omitempty"`
+	Time                  string          `json:"time,omitempty"`
+	TxnID                 string          `json:"txnID,omitempty"`
+	UserAgent             string          `json:"ua,omitempty"`
+	Username              string          `json:"-"`
+}
+
 func (l LogWriter) LogRequest(req *http.Request, start time.Time, dur time.Duration, rw *ResponseWriter, pretty bool) {
 	var username = "-"
 	if req.URL.User != nil {
@@ -99,27 +122,27 @@ func (l LogWriter) LogRequest(req *http.Request, start time.Time, dur time.Durat
 		q = string(b)
 	}
 
-	out := map[string]interface{}{
-		"clientIP":              escape(remoteip.Get(req)),
-		"contentType":           rw.w.Header().Get("Content-Type"),
-		"cookies":               escape(first(req.Header["Cookie"])),
-		"date":                  start.Format("2006-01-02"),
-		"duration":              dur / time.Millisecond,
-		"fromCache":             CacheStatusFromHeaders(rw.w.Header()),
-		"httpStatusCode":        rw.status,
-		"method":                escape(req.Method),
-		"path":                  escape(req.URL.Path),
-		"queryString":           json.RawMessage(q),
-		"referrer":              escape(first(req.Header["Referer"])),
-		"requestContentLength":  req.ContentLength,
-		"responseContentLength": rw.length,
-		"serverHN":              escape(l.Hostname),
-		"serverIP":              escape(l.IP.String()),
-		"serverPort":            escape(l.Port),
-		"time":                  start.Format("15:04:05.000"),
-		"txnID":                 TransactionFromContext(req.Context()),
-		"userAgent":             UserAgent(req),
-		"username":              escape(username),
+	out := AccessLog{
+		ClientIP:              remoteip.Get(req),
+		ContentType:           rw.w.Header().Get("Content-Type"),
+		Cookies:               first(req.Header["Cookie"]),
+		Date:                  start.Format("2006-01-02"),
+		Duration:              dur / time.Millisecond,
+		FromCache:             CacheStatusFromHeaders(rw.w.Header()),
+		HttpStatusCode:        rw.status,
+		Method:                req.Method,
+		Path:                  req.URL.Path,
+		QueryString:           json.RawMessage(q),
+		Referrer:              first(req.Header["Referer"]),
+		RequestContentLength:  int(req.ContentLength),
+		ResponseContentLength: rw.length,
+		ServerHN:              l.Hostname,
+		ServerIP:              l.IP.String(),
+		ServerPort:            l.Port,
+		Time:                  start.Format("15:04:05.000"),
+		TxnID:                 TransactionFromContext(req.Context()),
+		UserAgent:             UserAgent(req),
+		Username:              username,
 	}
 
 	raw, _ := json.Marshal(out)
