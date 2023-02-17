@@ -3,6 +3,7 @@ package cache
 import (
 	"bytes"
 	"fmt"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -88,7 +89,8 @@ func HandlerWrapper(cacheDuration int, next http.Handler) http.HandlerFunc {
 		}
 
 		m := metrics.GetRecorder(r.Context())
-		key := r.Method + r.RequestURI + r.Header.Get("range")
+		host, _, _ := net.SplitHostPort(r.Host)
+		key := host + r.Method + r.RequestURI + r.Header.Get("range")
 
 		if handlerTryCache(w, r, m, key, d) {
 			return
