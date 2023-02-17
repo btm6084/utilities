@@ -157,6 +157,15 @@ func Set(m metrics.Recorder, key string, value interface{}) error {
 	return SetWithDuration(m, key, value, dur)
 }
 
+// Set a value in cache. Value MUST be serializeable by JSON. UnExported fields will be ignored!
+func Delete(m metrics.Recorder, key string) error {
+	if !Enabled {
+		return ErrCacheDisabled
+	}
+
+	return c.Delete(m, key)
+}
+
 // SetWithDuration sets a value in cache. Value MUST be serializeable by JSON. UnExported fields will be ignored!
 func SetWithDuration(m metrics.Recorder, key string, value interface{}, d time.Duration) error {
 	if d < 0 {
