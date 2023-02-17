@@ -157,7 +157,7 @@ func Set(m metrics.Recorder, key string, value interface{}) error {
 	return SetWithDuration(m, key, value, dur)
 }
 
-// Set a value in cache. Value MUST be serializeable by JSON. UnExported fields will be ignored!
+// Delete a value from cache.
 func Delete(m metrics.Recorder, key string) error {
 	if !Enabled {
 		return ErrCacheDisabled
