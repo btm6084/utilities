@@ -31,8 +31,14 @@ func TestGet(t *testing.T) {
 		require.Equal(t, "54.146.177.172", Get(r))
 	})
 
-	t.Run("Client", func(t *testing.T) {
+	t.Run("Only Loops Available", func(t *testing.T) {
 		r := &http.Request{Header: http.Header{}, RemoteAddr: "127.0.0.1"}
 		require.Equal(t, "127.0.0.1", Get(r))
+	})
+
+	t.Run("Hmmm", func(t *testing.T) {
+		r := &http.Request{Header: http.Header{}, RemoteAddr: "10.10.11.181:50854"}
+		r.Header.Set("X-Forwarded-For", "127.0.0.1, 54.146.177.172")
+		require.Equal(t, "54.146.177.172", Get(r))
 	})
 }

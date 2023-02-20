@@ -72,7 +72,7 @@ func Get(r *http.Request) string {
 			if !strings.Contains(err.Error(), "missing port in address") {
 				continue
 			}
-			host = ips[i]
+			host = strings.Trim(ips[i], `"' ,`)
 		}
 
 		ip := net.ParseIP(host)
