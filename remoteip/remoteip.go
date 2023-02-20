@@ -22,7 +22,9 @@ func Get(r *http.Request) string {
 	}
 
 	pieces := strings.Split(raw, ",")
-	candidate := strings.Trim(pieces[0], `'" `)
+
+	// Trim the final one out of the chain, as that is the thing talking to us from the internet.
+	candidate := strings.Trim(pieces[len(pieces)-1], `'" `)
 
 	var host string
 	host, _, err := net.SplitHostPort(candidate)
