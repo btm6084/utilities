@@ -4,59 +4,35 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/spf13/cast"
 	"github.com/stretchr/testify/require"
 )
 
 func TestGet(t *testing.T) {
-	testCases := []struct {
-		Raw      string
-		Expected string
-	}{
-		{"192.168.1.1", "192.168.1.1"},
-		{"192.168.1.1:4080", "192.168.1.1"},
-		{"54.146.177.172, 64.252.67.225", "54.146.177.172"},
-		{"54.146.177.172:4080, 64.252.67.225", "54.146.177.172"},
-		{"001:db8:3333:4444:5555:7777:8888:9999", "1:db8:3333:4444:5555:7777:8888:9999"},
-		{"[002:db8:3333:4444:5555:7777:8888:9999]:8080", "2:db8:3333:4444:5555:7777:8888:9999"},
-		{"[003:db8:3333:4444:5555:7777:8888:9999]:", "3:db8:3333:4444:5555:7777:8888:9999"},
-		{"[004:db8:3333:4444:5555:7777:8888:9999]", "-"},
-		{"005:db8:3333:4444:5555:7777:8888:9999:8080", "-"},
-		{"", "-"},
-		{"192.162.1111", "-"},
-	}
+	t.Run("X-Forwarded-For", func(t *testing.T) {
+		r := &http.Request{Header: http.Header{}, RemoteAddr: "10.10.1.247"}
+		r.Header.Set("X-Forwarded-For", "127.0.0.1, 54.146.177.1,192.168.0.1,54.146.177.2, 10.10.1.246,192.168.1.1")
+		require.Equal(t, "54.146.177.2", Get(r))
+	})
 
-	for n, tc := range testCases {
-		t.Run("X-Client-IP-"+cast.ToString(n), func(t *testing.T) {
-			r := &http.Request{Header: http.Header{}}
+	t.Run("With Ports", func(t *testing.T) {
+		r := &http.Request{Header: http.Header{}, RemoteAddr: "10.10.1.247"}
+		r.Header.Set("X-Forwarded-For", "127.0.0.1, 54.146.177.1,192.168.0.1:20,54.146.177.2:8080, 10.10.1.246,192.168.1.1")
+		require.Equal(t, "54.146.177.2", Get(r))
+	})
 
-			r.Header.Set("X-Client-IP", tc.Raw)
-			require.Equal(t, tc.Expected, Get(r))
-		})
-	}
+	t.Run("Prefer RemoteAddr", func(t *testing.T) {
+		r := &http.Request{Header: http.Header{}, RemoteAddr: "54.146.177.3"}
+		r.Header.Set("X-Forwarded-For", "127.0.0.1, 54.146.177.1,192.168.0.1,54.146.177.2, 10.10.1.246,192.168.1.1")
+		require.Equal(t, "54.146.177.3", Get(r))
+	})
 
-	for n, tc := range testCases {
-		t.Run("X-Forwarded-For-"+cast.ToString(n), func(t *testing.T) {
-			r := &http.Request{Header: http.Header{}}
+	t.Run("Client", func(t *testing.T) {
+		r := &http.Request{Header: http.Header{}, RemoteAddr: "54.146.177.172"}
+		require.Equal(t, "54.146.177.172", Get(r))
+	})
 
-			r.Header.Set("X-Forwarded-For", tc.Raw)
-			require.Equal(t, tc.Expected, Get(r))
-		})
-	}
-
-	for n, tc := range testCases {
-		t.Run("X-Real-IP-"+cast.ToString(n), func(t *testing.T) {
-			r := &http.Request{Header: http.Header{}}
-
-			r.Header.Set("X-Real-IP", tc.Raw)
-			require.Equal(t, tc.Expected, Get(r))
-		})
-	}
-
-	for n, tc := range testCases {
-		t.Run("RemoteAddr-"+cast.ToString(n), func(t *testing.T) {
-			r := &http.Request{RemoteAddr: tc.Raw}
-			require.Equal(t, tc.Expected, Get(r))
-		})
-	}
+	t.Run("Client", func(t *testing.T) {
+		r := &http.Request{Header: http.Header{}, RemoteAddr: "127.0.0.1"}
+		require.Equal(t, "127.0.0.1", Get(r))
+	})
 }
