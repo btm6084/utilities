@@ -6,6 +6,10 @@ import (
 	"strings"
 )
 
+var (
+	ExcludeIPS = map[string]bool{}
+)
+
 type CIDRRange []*net.IPNet
 
 // NewCIDRRange converts a slice of IP address strings into an IPList of IPNets (CIDRs)
@@ -63,9 +67,9 @@ func Get(r *http.Request) string {
 	if r.Header.Get("X-Forwarded-For") != "" {
 		ips = append(ips, strings.Split(r.Header.Get("X-Forwarded-For"), ",")...)
 	}
-	ips = append(ips, r.RemoteAddr)
+	ips = append([]string{r.RemoteAddr}, ips...)
 
-	for i := len(ips) - 1; i >= 0; i-- {
+	for i := 0; i < len(ips); i++ {
 		var host string
 		host, _, err := net.SplitHostPort(ips[i])
 		if err != nil {
