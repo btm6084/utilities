@@ -91,7 +91,21 @@ func Get(r *http.Request) string {
 		return ip.String()
 	}
 
-	return r.RemoteAddr
+	var host string
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		if !strings.Contains(err.Error(), "missing port in address") {
+			return "-"
+		}
+		host = strings.Trim(r.RemoteAddr, `"' ,`)
+	}
+
+	ip := net.ParseIP(host)
+	if ip == nil {
+		return "-"
+	}
+
+	return ip.String()
 }
 
 // Get returns the remote IP address from the request.

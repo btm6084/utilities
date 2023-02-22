@@ -41,4 +41,10 @@ func TestGet(t *testing.T) {
 		r.Header.Set("X-Forwarded-For", "127.0.0.1, 54.146.177.172")
 		require.Equal(t, "54.146.177.172", Get(r))
 	})
+
+	t.Run("Remote Addr with Port", func(t *testing.T) {
+		r := &http.Request{Header: http.Header{}, RemoteAddr: "10.10.11.181:50854"}
+		r.Header.Set("X-Forwarded-For", "127.0.0.1")
+		require.Equal(t, "10.10.11.181", Get(r))
+	})
 }
