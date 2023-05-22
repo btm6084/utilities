@@ -26,10 +26,16 @@ func Round(num float64) int {
 	return int(num + math.Copysign(0.5, num))
 }
 
-// ToFixed will set a fixed precision on a float.
+// ToFixed will set a fixed precision on a float. Rounded
 func ToFixed(num float64, precision int) float64 {
 	output := math.Pow(10, float64(precision))
 	return float64(Round(num*output)) / output
+}
+
+// ToFixedTruncate will set a fixed precision on a float. Not rounded, just truncated
+func ToFixedTruncate(num float64, precision int) float64 {
+	output := math.Pow(10, float64(precision))
+	return float64(int(num*output)) / output
 }
 
 func ZeroIfNilInt(in *int) int {

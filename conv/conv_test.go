@@ -67,6 +67,15 @@ func TestToFixed(t *testing.T) {
 	require.Equal(t, 0.3, ToFixed(a+b, 1))
 }
 
+func TestToFixedTruncate(t *testing.T) {
+	require.Equal(t, 9.0, ToFixedTruncate(9.06514265000000007, 0))
+	require.Equal(t, 9.0, ToFixedTruncate(9.06514265000000007, 1))
+	require.Equal(t, 9.06, ToFixedTruncate(9.06514265000000007, 2))
+	require.Equal(t, 9.065, ToFixedTruncate(9.06514265000000007, 3))
+	require.Equal(t, 9.0651, ToFixedTruncate(9.06514265000000007, 4))
+	require.Equal(t, 9.06514, ToFixedTruncate(9.06514265000000007, 5))
+}
+
 func TestFormatDuration(t *testing.T) {
 	testCases := []struct {
 		Label    string
