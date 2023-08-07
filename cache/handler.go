@@ -89,7 +89,11 @@ func HandlerWrapper(cacheDuration int, next http.Handler) http.HandlerFunc {
 		}
 
 		m := metrics.GetRecorder(r.Context())
-		host, _, _ := net.SplitHostPort(r.Host)
+		host, _, err := net.SplitHostPort(r.Host)
+		if err != nil {
+			host = strings.Trim(r.Host, `"' ,`)
+		}
+
 		key := host + r.Method + r.RequestURI + r.Header.Get("range")
 
 		if handlerTryCache(w, r, m, key, d) {
